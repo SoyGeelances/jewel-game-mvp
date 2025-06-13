@@ -3,7 +3,7 @@ import GameScene from './GameScene'
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
-  width: 1200,
+  width: 700,
   height: window.innerHeight,
   backgroundColor: '#222',
   parent: "content",

@@ -1,7 +1,10 @@
 import Phaser from 'phaser'
-
+//Tamaño grilla
 const GRID_WIDTH = 5
 const GRID_HEIGHT = 6
+//tamaño caramelo frame
+const CANDY_WIDTH = 98
+const CANDY_HEIGHT = 101
 
 export default class GameScene extends Phaser.Scene {
   private grid: Phaser.GameObjects.Image[][] = []
@@ -20,15 +23,15 @@ export default class GameScene extends Phaser.Scene {
   }
 
   createGrid() {
-    const CANDY_WIDTH = 98
-    const CANDY_HEIGHT = 101
 
     for (let row = 0; row < GRID_HEIGHT; row++) {
         this.grid[row] = []
 
         for (let col = 0; col < GRID_WIDTH; col++) {
-        const candyType = Phaser.Math.Between(0, 5) // del 0 al 5 (6 tipos)
-        //const candyType = (row === 0 && col < 3) ? 1 : Phaser.Math.Between(0, 5)  //forzá una fila de 3 iguales
+
+        const candyType = Phaser.Math.Between(1,6)
+         // del 0 al 5 (6 tipos)
+        //co5st5candyType = (row === 0 && col < 3) ? 1 : Phaser.Math.Between(0, 5)  //forzá una fila de 3 iguales
 
         const x = col * CANDY_WIDTH + CANDY_WIDTH / 2 + 100
         const y = row * CANDY_HEIGHT + CANDY_HEIGHT / 2 + 100
@@ -60,7 +63,6 @@ export default class GameScene extends Phaser.Scene {
         //console.log('Intercambiar:', prevCandy.getData('row'), prevCandy.getData('col'), '<->',candy.getData('row'), candy.getData('col')).
             if (this.areAdjacent(prevCandy, candy)) {
                 this.swapCandies(prevCandy, candy)
-                
             } else {
                 console.log('No son adyacentes')
             }
@@ -128,6 +130,28 @@ export default class GameScene extends Phaser.Scene {
                 })
             } else {
                 console.log('No hay combinaciones')
+                this.tweens.add({
+                    targets: c1,
+                    x: c2.x,
+                    y: c2.y,
+                    duration: 200
+                })
+                this.tweens.add({
+                    targets: c2,
+                    x: c1.x,
+                    y: c1.y,
+                    duration: 200
+                })
+
+                // Revertir lógica en la grilla
+                this.grid[row1][col1] = c1
+                this.grid[row2][col2] = c2
+
+                // Revertir datos
+                c1.setData('row', row1)
+                c1.setData('col', col1)
+                c2.setData('row', row2)
+                c2.setData('col', col2)
             }
     })
   }
@@ -146,17 +170,17 @@ export default class GameScene extends Phaser.Scene {
         if (prev && current.getData('type') === prev.getData('type')) {
             match.push(current)
             if (match.length === 1) {
-            match.unshift(prev)
+            match.unshift(prev) // incluimos el primero que coincidió
             }
         } else {
             if (match.length >= 3) {
-            match.forEach(c => matches.add(c))
+            match.forEach(c => matches.add(c)) // guardamos la combinación
             }
-            match = []
+            match = [] // reiniciamos
         }
         }
         if (match.length >= 3) {
-        match.forEach(c => matches.add(c))
+            match.forEach(c => matches.add(c)) // por si hay un match al final de la fila
         }
     }
 
@@ -210,7 +234,7 @@ export default class GameScene extends Phaser.Scene {
                 const candyAbove = this.grid[aboveRow][col]
                     if (candyAbove) {
                         // Moverlo visualmente
-                        const newY = row * 101 + 101 / 2 + 100
+                        const newY = row * CANDY_HEIGHT + CANDY_HEIGHT / 2 + 100
                         this.tweens.add({
                         targets: candyAbove,
                         y: newY,
@@ -234,7 +258,7 @@ export default class GameScene extends Phaser.Scene {
     for (let row = 0; row < GRID_HEIGHT; row++) {
         for (let col = 0; col < GRID_WIDTH; col++) {
             if (!this.grid[row][col]) {
-                const candyType = Phaser.Math.Between(0, 5)
+                const candyType = Phaser.Math.Between(1,6)
                 const x = col * 98 + 98 / 2 + 100
                 const y = row * 101 + 101 / 2 + 100
                 const candy = this.add.sprite(x, y - 150, 'candies', candyType) // aparece desde arriba
@@ -255,5 +279,101 @@ export default class GameScene extends Phaser.Scene {
             }
         }
     }
+
+    this.time.delayedCall(350, () => {
+        const newMatches = this.getMatches()
+        if (newMatches.length > 0) {
+            console.log('MATCH AUTOMÁTICO:', newMatches.length)
+            this.removeMatches(newMatches)
+
+            this.time.delayedCall(300, () => {
+                this.dropCandies()
+                this.time.delayedCall(300, () => {
+                this.refillGrid() // se repite hasta que ya no haya más
+                })
+            })
+        } else {
+            if (!this.hasPossibleMoves()) {
+                console.log('Sin jugadas posibles: mezclando tablero')
+                this.shuffleBoard()
+            }
+        }
+    })
   }
+
+  private swapData(c1: Phaser.GameObjects.Sprite, c2: Phaser.GameObjects.Sprite) {
+    const row1 = c1.getData('row')
+    const col1 = c1.getData('col')
+    const row2 = c2.getData('row')
+    const col2 = c2.getData('col')
+
+    this.grid[row1][col1] = c2
+    this.grid[row2][col2] = c1
+
+    c1.setData('row', row2)
+    c1.setData('col', col2)
+    c2.setData('row', row1)
+    c2.setData('col', col1)
+  }
+
+  private hasPossibleMoves(): boolean {
+    for (let row = 0; row < GRID_HEIGHT; row++) {
+        for (let col = 0; col < GRID_WIDTH; col++) {
+        const current = this.grid[row][col]
+        const currentType = current.getData('type')
+
+        // Verificamos derecha
+        if (col < GRID_WIDTH - 1) {
+            const right = this.grid[row][col + 1]
+            if (right.getData('type') !== currentType) {
+            this.swapData(current, right)
+            const matches = this.getMatches()
+            this.swapData(current, right) // revertir
+            if (matches.length > 0) return true
+            }
+        }
+
+        // Verificamos abajo
+        if (row < GRID_HEIGHT - 1) {
+            const down = this.grid[row + 1][col]
+            if (down.getData('type') !== currentType) {
+            this.swapData(current, down)
+            const matches = this.getMatches()
+            this.swapData(current, down) // revertir
+            if (matches.length > 0) return true
+            }
+        }
+        }
+    }
+    return false
+  }
+
+  private shuffleBoard() {
+    const candies: Phaser.GameObjects.Sprite[] = []
+
+    // Recolectar todos los caramelos
+    for (let row = 0; row < GRID_HEIGHT; row++) {
+        for (let col = 0; col < GRID_WIDTH; col++) {
+        candies.push(this.grid[row][col])
+        }
+    }
+
+    // Barajar
+    Phaser.Utils.Array.Shuffle(candies)
+
+    // Reasignar a la grilla con nuevas posiciones
+    let i = 0
+    for (let row = 0; row < GRID_HEIGHT; row++) {
+        for (let col = 0; col < GRID_WIDTH; col++) {
+        const candy = candies[i++]
+        const x = col * 98 + 98 / 2 + 100
+        const y = row * 101 + 101 / 2 + 100
+
+        candy.setPosition(x, y)
+        candy.setData('row', row)
+        candy.setData('col', col)
+        this.grid[row][col] = candy
+        }
+    }
+ }
 }
