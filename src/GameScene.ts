@@ -15,7 +15,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.spritesheet('candies', '/assets/candiesx6.png', { frameWidth: 98, frameHeight: 101 })
+    this.load.spritesheet('candies', 'assets/candiesx6.png', { frameWidth: 98, frameHeight: 101 })
   }
 
   create() {
