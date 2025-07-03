@@ -1,0 +1,55 @@
+
+import { Footer } from "../components/Footer";
+import { promptContentConfig } from "../types";
+import { PromptScreen } from "./PromptScreen";
+
+export class RetryScreen  {
+  private prompt: PromptScreen;
+  private finalScore: Phaser.GameObjects.Image;
+  private finalScoreText: Phaser.GameObjects.Text;
+
+  constructor(
+    private scene: Phaser.Scene,
+  ) {
+    this.prompt = new PromptScreen(scene);
+  }
+
+  addMask() {
+    this.prompt.addMask();
+  }
+
+  show(promptContent: promptContentConfig, promptType: string) {
+    this.prompt.setBackground(promptType, 0, 0, 1.2, 1.2);
+    this.prompt.setTitle(promptContent.title, 0, -133, 1.2, 1.2);
+    this.prompt.setMessage(promptContent.message, 0, -30, 1.2, 1.2);
+    this.prompt.setActions(promptContent.actions, 0, 60, 65, 1.2, 1.2);
+    // this.scene.sound.add('retry').play();
+    Footer.create(this.scene);
+  }
+
+
+  public setFinalScore(scoreValue) {
+    this.prompt.setSplashBackground();
+    this.finalScore = this.scene.add.image(this.scene.cameras.main.centerX, 60, "final_score")
+    .setScale(1.1, 1.1)
+    .setDepth(110)
+    .setOrigin(0.5, 0.5);
+
+    this.finalScoreText = this.scene.add.text(
+      this.scene.cameras.main.centerX + 135 + 20,
+      55,
+      scoreValue,
+      {
+        font: "40px montserrat-memo",
+        color: "#E2D64B",
+      }
+    )
+    .setDepth(110)
+    .setOrigin(1, 0.5);
+
+  }
+
+  hide(): void {
+    this.prompt.hide();
+  }
+}

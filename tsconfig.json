@@ -1,13 +1,10 @@
 {
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "strict": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "outDir": "./dist"
-  },
-  "include": ["src"]
+	"compilerOptions": {
+		"target": "es2017",
+		"module": "commonjs",
+		"esModuleInterop": true,
+		"rootDir": "./src/ts/",
+		"sourceMap": true,
+		"moduleResolution": "node"
+	}
 }

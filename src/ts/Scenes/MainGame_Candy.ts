@@ -1,0 +1,534 @@
+import Phaser from 'phaser'
+import { WinnerScreen, RetryScreen } from '../Screen';
+import { prompt } from '../config'
+import { ButtonEventHandler } from '../handlers';
+import { EventObserver } from '../observer';
+import { CloseButton } from "../components";
+import { Footer } from "../components/Footer";
+
+// Tamaño grilla
+const GRID_WIDTH = 5
+const GRID_HEIGHT = 6
+const CANDY_WIDTH = 75.2
+const CANDY_HEIGHT = 75.2
+const GAP = 3
+
+export default class MainGame extends Phaser.Scene {
+  public static Name = "MainGame"
+
+  private grid: Phaser.GameObjects.Sprite[][] = []
+  private offsetX = 0
+  private offsetY = 0
+  private selectedCandy: Phaser.GameObjects.Sprite | null = null
+  private movingCandiesInProcess = false
+  private retryScreen!: RetryScreen
+  private winnerScreen!: WinnerScreen
+  private scoreValue = 0
+  private scoreGoal = 80
+  private scoreText!: Phaser.GameObjects.Text
+
+  private progressBar!: Phaser.GameObjects.Graphics
+  private progressFrame!: Phaser.GameObjects.Image
+  private progressTimer!: Phaser.Time.TimerEvent
+  private totalTime = 80 // segundos
+  private eventObserver: EventObserver;
+  private gameState: 'playing' | 'ended' = 'playing';
+  private closeButton: CloseButton;
+
+  preload() {
+    this.load.spritesheet('candies', 'assets/spritesheet_cards_candy.png', {
+      frameWidth: 116,
+      frameHeight: 116,
+    })
+    this.load.image('progress-frame', 'assets/progress_bar_frame.png')
+  }
+
+  private getCandyPosition(row: number, col: number): { x: number; y: number } {
+    const x = this.offsetX + col * (CANDY_WIDTH + GAP) + CANDY_WIDTH / 2
+    const y = this.offsetY + row * (CANDY_HEIGHT + GAP) + CANDY_HEIGHT / 2
+    return { x, y }
+  }
+
+  createGrid() {
+    this.offsetX = (this.scale.width - (GRID_WIDTH * CANDY_WIDTH + (GRID_WIDTH - 1) * GAP)) / 2
+    const gridHeight = GRID_HEIGHT * CANDY_HEIGHT + (GRID_HEIGHT - 1) * GAP
+    this.offsetY = (this.scale.height - gridHeight) / 2
+
+    for (let row = 0; row < GRID_HEIGHT; row++) {
+      this.grid[row] = []
+
+      for (let col = 0; col < GRID_WIDTH; col++) {
+        const candyType = Phaser.Math.Between(1, 7)
+
+        const x = this.offsetX + col * (CANDY_WIDTH + GAP) + CANDY_WIDTH / 2
+        const y = this.offsetY + row * (CANDY_HEIGHT + GAP) + CANDY_HEIGHT / 2
+
+        const candy = this.createCandy(x, y, candyType, row, col)
+        //this.add.rectangle(x, y, 40, 40, 0x00ff00).setStrokeStyle(2, 0x000000) 
+        this.grid[row][col] = candy
+      }
+    }
+
+    const matches = this.getMatches()
+    if (matches.length > 0) {
+      console.log('MATCH FOUND:', matches.length, 'caramelos')
+      this.removeMatches(matches)
+
+      this.time.delayedCall(300, () => {
+        this.dropCandies()
+        this.time.delayedCall(300, () => {
+          this.refillGrid()
+        })
+      })
+    }
+  }
+
+  private createCandy(x: number, y: number, frame: number, row: number, col: number): Phaser.GameObjects.Sprite {
+    const candy = this.add.sprite(x, y, 'candies', frame).setScale(0.6)
+    candy.setData('type', frame)
+    candy.setData('row', row)
+    candy.setData('col', col)
+    candy.setInteractive()
+    candy.on('pointerdown', () => this.handleCandyClick(candy))
+    return candy
+  }
+
+  private areAdjacent(c1: Phaser.GameObjects.Sprite, c2: Phaser.GameObjects.Sprite): boolean {
+    const row1 = c1.getData('row')
+    const col1 = c1.getData('col')
+    const row2 = c2.getData('row')
+    const col2 = c2.getData('col')
+
+    const isNextTo = (Math.abs(row1 - row2) === 1 && col1 === col2) ||
+                    (Math.abs(col1 - col2) === 1 && row1 === row2)
+
+    return isNextTo
+  }
+
+  private handleCandyClick(candy: Phaser.GameObjects.Sprite) {
+    if (this.gameState === 'ended') return;
+    if (this.movingCandiesInProcess) return;
+
+    if (!this.selectedCandy) {
+        // Primer clic: seleccionamos este caramelo
+        this.selectedCandy = candy
+        candy.setScale(0.7) // Lo agrandamos visualmente
+    } else {
+        // Segundo clic: intercambiamos o reseteamos selección
+        const prevCandy = this.selectedCandy
+        prevCandy.setScale(0.6) // restauramos tamaño
+
+        if (prevCandy !== candy) {
+        // Aquí más adelante verificaremos si es movimiento válido
+        //console.log('Intercambiar:', prevCandy.getData('row'), prevCandy.getData('col'), '<->',candy.getData('row'), candy.getData('col')).
+            if (this.areAdjacent(prevCandy, candy)) {
+                this.swapCandies(prevCandy, candy)
+            } else {
+                console.log('No son adyacentes')
+            }
+        }
+
+        this.selectedCandy = null // reiniciamos selección
+    }
+  }
+
+  private swapCandies(c1: Phaser.GameObjects.Sprite, c2: Phaser.GameObjects.Sprite) {
+    this.movingCandiesInProcess = true
+
+    const row1 = c1.getData('row')
+    const col1 = c1.getData('col')
+    const row2 = c2.getData('row')
+    const col2 = c2.getData('col')
+    
+    // Animación visual (puedes usar .setPosition si no quieres animar)
+    this.tweens.add({
+        targets: c1,       // El sprite que queremos mover (caramelo 1)
+        x: c2.x,           // Nueva posición en X: la del caramelo 2
+        y: c2.y,           // Nueva posición en Y: la del caramelo 2
+        duration: 200      // Tiempo que dura la animación: 200 milisegundos (0.2 segundos)
+    })
+
+    this.tweens.add({
+        targets: c2,
+        x: c1.x,
+        y: c1.y,
+        duration: 200
+    })
+    
+    // Intercambio lógico en la grilla
+    this.grid[row1][col1] = c2
+    this.grid[row2][col2] = c1
+
+    // Actualizar los datos de posición
+    c1.setData('row', row2)
+    c1.setData('col', col2)
+    c2.setData('row', row1)
+    c2.setData('col', col1)
+
+    this.time.delayedCall(250, () => {
+        const matches = this.getMatches()
+            if (matches.length > 0) {
+                console.log('MATCH FOUND:', matches.length, 'caramelos')
+                this.removeMatches(matches)
+
+                this.time.delayedCall(300, () => {
+                this.dropCandies()
+
+                this.time.delayedCall(300, () => {
+                    this.refillGrid()
+                })
+                })
+            } else {
+                console.log('No hay combinaciones')
+                this.tweens.add({
+                    targets: c1,
+                    x: c2.x,
+                    y: c2.y,
+                    duration: 200
+                })
+                this.tweens.add({
+                    targets: c2,
+                    x: c1.x,
+                    y: c1.y,
+                    duration: 200
+                })
+
+                // Revertir lógica en la grilla
+                this.grid[row1][col1] = c1
+                this.grid[row2][col2] = c2
+
+                // Revertir datos
+                c1.setData('row', row1)
+                c1.setData('col', col1)
+                c2.setData('row', row2)
+                c2.setData('col', col2)
+
+                this.movingCandiesInProcess = false
+            }
+    })
+  }
+
+  private getMatches(): Phaser.GameObjects.Sprite[] {
+    const matches: Set<Phaser.GameObjects.Sprite> = new Set()
+
+    // Detectar combinaciones horizontales
+    for (let row = 0; row < GRID_HEIGHT; row++) {
+        let match: Phaser.GameObjects.Sprite[] = []
+
+        for (let col = 0; col < GRID_WIDTH; col++) {
+        const current = this.grid[row][col]
+        const prev = col > 0 ? this.grid[row][col - 1] : null
+
+        if (prev && current.getData('type') === prev.getData('type')) {
+            match.push(current)
+            if (match.length === 1) {
+            match.unshift(prev) // incluimos el primero que coincidió
+            }
+        } else {
+            if (match.length >= 3) {
+            match.forEach(c => matches.add(c)) // guardamos la combinación
+            }
+            match = [] // reiniciamos
+        }
+        }
+        if (match.length >= 3) {
+            match.forEach(c => matches.add(c)) // por si hay un match al final de la fila
+        }
+    }
+
+    // Detectar combinaciones verticales
+    for (let col = 0; col < GRID_WIDTH; col++) {
+        let match: Phaser.GameObjects.Sprite[] = []
+
+        for (let row = 0; row < GRID_HEIGHT; row++) {
+        const current = this.grid[row][col]
+        const prev = row > 0 ? this.grid[row - 1][col] : null
+
+        if (prev && current.getData('type') === prev.getData('type')) {
+            match.push(current)
+            if (match.length === 1) {
+            match.unshift(prev)
+            }
+        } else {
+            if (match.length >= 3) {
+            match.forEach(c => matches.add(c))
+            }
+            match = []
+        }
+        }
+        if (match.length >= 3) {
+        match.forEach(c => matches.add(c))
+        }
+    }
+
+    return Array.from(matches)
+  }
+
+  private updateScore(points: number) {
+    this.scoreValue += points
+    //console.log("score",this.scoreValue);
+    this.scoreText.setText(this.scoreValue.toString())
+
+    if (this.scoreValue >= this.scoreGoal && this.gameState !== 'ended') {
+        this.endGame(); 
+    }
+  }
+
+  private updateProgressBar(progress: number) {
+    const barWidth = 320
+    const barHeight = 29
+    const x = this.cameras.main.centerX - barWidth / 2
+    const y = this.scale.height - 86
+    const radius = 5;
+
+    this.progressBar.clear()
+
+    // Simula gradiente con color base sólido
+    this.progressBar.fillStyle(0x3dc51f, 1)
+    this.progressBar.fillRoundedRect(x, y, barWidth * progress, barHeight, radius);
+  }
+
+    private endGame() {
+    this.gameState = 'ended';
+    this.movingCandiesInProcess = false
+
+    if (this.scoreValue >= this.scoreGoal) {
+        this.winnerScreen.show(prompt.win, "winner_screen");
+        console.log('WIN');
+    } else {
+        console.log('ELSE');
+        this.retryScreen.setFinalScore(this.scoreValue);
+        this.retryScreen.show(prompt.retry, "prompt_screen");
+    }
+  }
+
+  private removeMatches(matches: Phaser.GameObjects.Sprite[]) {
+    //console.log("match.lenght", matches.length * 10);
+    this.updateScore(matches.length * 10)
+    matches.forEach(candy => {
+        const row = candy.getData('row')
+        const col = candy.getData('col')
+
+        // Eliminar visualmente
+        candy.destroy()
+
+        // Eliminar de la grilla lógica
+        this.grid[row][col] = null
+    })
+  }
+
+  private dropCandies() {
+    if (this.gameState === 'ended') return;
+    for (let col = 0; col < GRID_WIDTH; col++) {
+        for (let row = GRID_HEIGHT - 1; row >= 0; row--) {
+            if (this.grid[row][col] === null) {
+                // Buscar el caramelo más cercano arriba
+                for (let aboveRow = row - 1; aboveRow >= 0; aboveRow--) {
+                const candyAbove = this.grid[aboveRow][col]
+                    if (candyAbove) {
+                        // Moverlo visualmente
+                        const { x, y } = this.getCandyPosition(row, col)
+                        this.tweens.add({
+                        targets: candyAbove,
+                        y: y,
+                        duration: 200
+                        })
+
+                        // Actualizar datos
+                        this.grid[row][col] = candyAbove
+                        candyAbove.setData('row', row)
+
+                        this.grid[aboveRow][col] = null
+                        break
+                    }
+                }
+            }
+        }
+    }
+  }
+
+  private refillGrid() {
+    if (this.gameState === 'ended') return;
+    for (let row = 0; row < GRID_HEIGHT; row++) {
+        for (let col = 0; col < GRID_WIDTH; col++) {
+            if (!this.grid[row][col]) {
+                const candyType = Phaser.Math.Between(1,6)
+                const { x, y } = this.getCandyPosition(row, col)
+                const initialY = y - 2 * (CANDY_HEIGHT + GAP)
+
+                const candy = this.add.sprite(x, initialY, 'candies', candyType).setScale(0.6)
+                candy.setData('type', candyType)
+                candy.setData('row', row)
+                candy.setData('col', col)
+                candy.setInteractive()
+                candy.on('pointerdown', () => this.handleCandyClick(candy))
+
+                this.grid[row][col] = candy
+
+                // animar caída
+                this.tweens.add({
+                    targets: candy,
+                    y: y,
+                    duration: 300
+                })
+            }
+        }
+    }
+
+    this.time.delayedCall(350, () => {
+        const newMatches = this.getMatches()
+        if (newMatches.length > 0) {
+            console.log('MATCH AUTOMÁTICO:', newMatches.length)
+            this.removeMatches(newMatches)
+
+            this.time.delayedCall(300, () => {
+                this.dropCandies()
+                this.time.delayedCall(300, () => {
+                this.refillGrid() // se repite hasta que ya no haya más
+                })
+            })
+        } else {
+            if (!this.hasPossibleMoves()) {
+                this.shuffleBoard()
+                this.time.delayedCall(100, () => this.refillGrid())
+            } else {
+                this.movingCandiesInProcess = false 
+            }
+        }
+    })
+  }
+
+  private swapData(c1: Phaser.GameObjects.Sprite, c2: Phaser.GameObjects.Sprite) {
+    const row1 = c1.getData('row')
+    const col1 = c1.getData('col')
+    const row2 = c2.getData('row')
+    const col2 = c2.getData('col')
+
+    this.grid[row1][col1] = c2
+    this.grid[row2][col2] = c1
+
+    c1.setData('row', row2)
+    c1.setData('col', col2)
+    c2.setData('row', row1)
+    c2.setData('col', col1)
+  }
+
+  private hasPossibleMoves(): boolean {
+    for (let row = 0; row < GRID_HEIGHT; row++) {
+        for (let col = 0; col < GRID_WIDTH; col++) {
+        const current = this.grid[row][col]
+        const currentType = current.getData('type')
+
+        // Verificamos derecha
+        if (col < GRID_WIDTH - 1) {
+            const right = this.grid[row][col + 1]
+            if (right.getData('type') !== currentType) {
+            this.swapData(current, right)
+            const matches = this.getMatches()
+            this.swapData(current, right) // revertir
+            if (matches.length > 0) return true
+            }
+        }
+
+        // Verificamos abajo
+        if (row < GRID_HEIGHT - 1) {
+            const down = this.grid[row + 1][col]
+            if (down.getData('type') !== currentType) {
+            this.swapData(current, down)
+            const matches = this.getMatches()
+            this.swapData(current, down) // revertir
+            if (matches.length > 0) return true
+            }
+        }
+        }
+    }
+    return false
+  }
+
+  private shuffleBoard() {
+    const candies: Phaser.GameObjects.Sprite[] = []
+
+    // Recolectar todos los caramelos
+    for (let row = 0; row < GRID_HEIGHT; row++) {
+        for (let col = 0; col < GRID_WIDTH; col++) {
+            const candy = this.grid[row][col]
+            if (candy) {
+                candies.push(candy);
+            }
+        }
+    }
+
+    // Barajar
+    Phaser.Utils.Array.Shuffle(candies)
+
+    // Reasignar a la grilla con nuevas posiciones
+    let i = 0
+    for (let row = 0; row < GRID_HEIGHT; row++) {
+        for (let col = 0; col < GRID_WIDTH; col++) {
+        const candy = candies[i++]
+        const { x, y } = this.getCandyPosition(row, col)
+
+        candy.setPosition(x, y)
+        candy.setData('row', row)
+        candy.setData('col', col)
+        this.grid[row][col] = candy
+        }
+    }
+  }
+
+  create() {
+    this.gameState = 'playing';
+    this.closeButton = new CloseButton(this);
+    this.retryScreen = new RetryScreen(this)
+    this.winnerScreen = new WinnerScreen(this)
+    this.eventObserver = EventObserver.getInstance();
+
+    this.eventObserver.on('button-clicked', (buttonId: string) => {
+    ButtonEventHandler.handleButtonEvents(buttonId, this);
+    });
+
+    const scoreImage = this.add.image(20, 16, 'score').setOrigin(0, 0)
+    const scoreWidth = scoreImage.width;
+    const scoreHeight = scoreImage.height;
+
+    this.scoreValue = 0; 
+    this.scoreText = this.add.text(20 + scoreWidth - 30, 17 + scoreHeight / 2, '0', {
+        fontFamily: 'montserrat-memo',
+        fontSize: '40px',
+        color: '#FEC647',
+        fontStyle: 'bold',
+    })
+    .setOrigin(1, 0.5)
+
+    this.progressFrame = this.add.image(this.cameras.main.centerX, this.scale.height - 68, 'progress-frame').setOrigin(0.5)
+    this.progressBar = this.add.graphics()
+    this.updateProgressBar(1)
+
+    this.progressTimer = this.time.addEvent({
+      delay: this.totalTime * 200,
+
+      callback: () => {
+        this.endGame()
+        console.log('Tiempo terminado')
+        console.log('scoreValue: ', this.scoreValue )
+      }
+    })
+
+    this.events.on('update', () => {
+      const progress = Phaser.Math.Clamp(1 - this.progressTimer.getElapsed() / this.progressTimer.delay, 0, 1)
+      this.updateProgressBar(progress)
+    })
+
+    this.closeButton.create();
+		this.eventObserver.on('button-clicked', (buttonId) => {
+			ButtonEventHandler.handleButtonEvents(buttonId, this)
+	}, this);
+
+    Footer.create(this);
+    this.createGrid()
+  }
+
+  public getScoreValue(): string {
+    return this.scoreValue.toString();
+  }
+}
