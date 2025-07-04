@@ -64,6 +64,7 @@ export default class Preloader extends Phaser.Scene {
 		this.load.audio("retry", "retry.mp3");
 		this.load.audio("cash", "cash-register.mp3");
 		this.load.audio("cardFlip", "cardFlip.wav");
+        this.load.audio("level_up", "level-up.mp3");
 		
 
 		// You should remove this logic; this is only included here to show off the progress bar.

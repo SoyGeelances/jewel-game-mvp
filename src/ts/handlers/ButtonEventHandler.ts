@@ -50,17 +50,9 @@ export class ButtonEventHandler {
     }
 
     // Método que detecta si es iOS
-    private static isIOS() {
+    /*private static isIOS() {
         return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    }
-
-    // Método para copiar usando la función probada que usaste en tu HTML
-    private static copyToClipboard(text: string) {
-        copy(text,{
-            debug: true,
-            message: 'Selecciona todo el texto en el recuadro, presiona “Copiar” y luego “Cancelar”.',
-        });
-    }
+    }*/
     
     // Método para copiar el texto en otros navegadores o usando el fallback
     private static fallbackCopyTextToClipboard(text: string) {
@@ -85,11 +77,15 @@ export class ButtonEventHandler {
     private static handleCopyCode(scene: Phaser.Scene) {
         const code = (scene.game as Game).selectedCoupon;
 
-        // Usamos la función de copia que probaste con éxito
-        if (ButtonEventHandler.isIOS()) {
-            ButtonEventHandler.copyToClipboard(code); // Para iOS también usamos esta lógica
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(code).then(() => {
+                //console.log("Copiado con clipboard API");
+            }).catch(err => {
+                //console.warn("Clipboard API falló, usando fallback", err);
+                ButtonEventHandler.fallbackCopyTextToClipboard(code);
+            });
         } else {
-            ButtonEventHandler.copyToClipboard(code);
+            ButtonEventHandler.fallbackCopyTextToClipboard(code);
         }
     }
 }

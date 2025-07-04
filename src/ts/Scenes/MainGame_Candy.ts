@@ -6,12 +6,25 @@ import { EventObserver } from '../observer';
 import { CloseButton } from "../components";
 import { Footer } from "../components/Footer";
 
-// Tamaño grilla
+// GRID
 const GRID_WIDTH = 5
 const GRID_HEIGHT = 6
 const CANDY_WIDTH = 75.2
 const CANDY_HEIGHT = 75.2
 const GAP = 3
+
+// LEVELS
+const LEVELS = [
+  { level: 1, goal: 500, time: 40 },
+  { level: 2, goal: 1300, time: 42 },
+  { level: 3, goal: 2500, time: 45 },
+  { level: 4, goal: 3800, time: 49 },
+  { level: 5, goal: 5200, time: 55 },
+  { level: 6, goal: 6700, time: 65 },
+  { level: 7, goal: 8100, time: 69 },
+  { level: 8, goal: 10000, time: 67 },
+];
+
 
 export default class MainGame extends Phaser.Scene {
   public static Name = "MainGame"
@@ -24,13 +37,17 @@ export default class MainGame extends Phaser.Scene {
   private retryScreen!: RetryScreen
   private winnerScreen!: WinnerScreen
   private scoreValue = 0
-  private scoreGoal = 80
+  private scoreGoal = LEVELS[0].goal;
   private scoreText!: Phaser.GameObjects.Text
+  private currentLevelIndex = 0;
+  private totalTime = LEVELS[0].time; // en segundos
+  private matchValue = 20;
+  private levelUpSound!: Phaser.Sound.BaseSound;
+
 
   private progressBar!: Phaser.GameObjects.Graphics
   private progressFrame!: Phaser.GameObjects.Image
   private progressTimer!: Phaser.Time.TimerEvent
-  private totalTime = 80 // segundos
   private eventObserver: EventObserver;
   private gameState: 'playing' | 'ended' = 'playing';
   private closeButton: CloseButton;
@@ -270,7 +287,11 @@ export default class MainGame extends Phaser.Scene {
     this.scoreText.setText(this.scoreValue.toString())
 
     if (this.scoreValue >= this.scoreGoal && this.gameState !== 'ended') {
-        this.endGame(); 
+        if (this.currentLevelIndex === LEVELS.length - 1) {
+            this.endGame(); // nivel final
+        } else {
+            this.nextLevel(); // avanzar al siguiente
+        }
     }
   }
 
@@ -288,7 +309,32 @@ export default class MainGame extends Phaser.Scene {
     this.progressBar.fillRoundedRect(x, y, barWidth * progress, barHeight, radius);
   }
 
-    private endGame() {
+  private nextLevel() {
+    this.currentLevelIndex++;
+    if (this.currentLevelIndex >= LEVELS.length) {
+        this.endGame(); // WIN
+        return;
+    }
+
+    const newLevel = LEVELS[this.currentLevelIndex];
+    this.scoreGoal = newLevel.goal;
+    this.totalTime = newLevel.time;
+
+    // Reiniciar tiempo
+    this.progressTimer.destroy();
+    this.progressTimer = this.time.addEvent({
+        delay: this.totalTime * 1000,
+        callback: () => {
+        this.endGame();
+        }
+    });
+
+    this.updateProgressBar(1);
+    this.levelUpSound.play();
+    console.log(`Nivel ${newLevel.level} iniciado. Meta: ${newLevel.goal}, Tiempo: ${newLevel.time}s`);
+ }
+
+  private endGame() {
     this.gameState = 'ended';
     this.movingCandiesInProcess = false
 
@@ -304,7 +350,7 @@ export default class MainGame extends Phaser.Scene {
 
   private removeMatches(matches: Phaser.GameObjects.Sprite[]) {
     //console.log("match.lenght", matches.length * 10);
-    this.updateScore(matches.length * 10)
+    this.updateScore(matches.length * this.matchValue) 
     matches.forEach(candy => {
         const row = candy.getData('row')
         const col = candy.getData('col')
@@ -476,12 +522,26 @@ export default class MainGame extends Phaser.Scene {
     }
   }
 
+  init(data: { levelIndex: number; score: number }) {
+    this.currentLevelIndex = data.levelIndex ?? 0;
+    this.scoreValue = data.score ?? 0;
+
+    const level = LEVELS[this.currentLevelIndex];
+    this.scoreGoal = level.goal;
+    this.totalTime = level.time;
+  }
+
+
   create() {
     this.gameState = 'playing';
     this.closeButton = new CloseButton(this);
     this.retryScreen = new RetryScreen(this)
     this.winnerScreen = new WinnerScreen(this)
     this.eventObserver = EventObserver.getInstance();
+    this.levelUpSound = this.sound.add("level_up", {
+        volume: 0.6,
+        loop: false,
+    });
 
     this.eventObserver.on('button-clicked', (buttonId: string) => {
     ButtonEventHandler.handleButtonEvents(buttonId, this);
@@ -491,7 +551,6 @@ export default class MainGame extends Phaser.Scene {
     const scoreWidth = scoreImage.width;
     const scoreHeight = scoreImage.height;
 
-    this.scoreValue = 0; 
     this.scoreText = this.add.text(20 + scoreWidth - 30, 17 + scoreHeight / 2, '0', {
         fontFamily: 'montserrat-memo',
         fontSize: '40px',
@@ -505,7 +564,7 @@ export default class MainGame extends Phaser.Scene {
     this.updateProgressBar(1)
 
     this.progressTimer = this.time.addEvent({
-      delay: this.totalTime * 200,
+      delay: this.totalTime * 1000,
 
       callback: () => {
         this.endGame()
