@@ -5,24 +5,25 @@ import { ButtonEventHandler } from '../handlers';
 import { EventObserver } from '../observer';
 import { CloseButton } from "../components";
 import { Footer } from "../components/Footer";
+import { LevelUpScreen } from "../components/LevelUpScreen";
 
 // GRID
 const GRID_WIDTH = 5
 const GRID_HEIGHT = 6
-const CANDY_WIDTH = 75.2
-const CANDY_HEIGHT = 75.2
-const GAP = 3
+const CANDY_WIDTH = 116 * 0.6;
+const CANDY_HEIGHT = 116 * 0.6;
+const GAP = 6
 
 // LEVELS
 const LEVELS = [
-  { level: 1, goal: 500, time: 40 },
-  { level: 2, goal: 1300, time: 42 },
-  { level: 3, goal: 2500, time: 45 },
-  { level: 4, goal: 3800, time: 49 },
-  { level: 5, goal: 5200, time: 55 },
-  { level: 6, goal: 6700, time: 65 },
-  { level: 7, goal: 8100, time: 69 },
-  { level: 8, goal: 10000, time: 67 },
+  { level: 1, goal: 500, time: 42 },
+  { level: 2, goal: 1300, time: 45 },
+  { level: 3, goal: 2500, time: 48 },
+  { level: 4, goal: 3800, time: 52 },
+  { level: 5, goal: 5200, time: 57 },
+  { level: 6, goal: 6700, time: 62 },
+  { level: 7, goal: 8100, time: 66 },
+  { level: 8, goal: 10000, time: 65 },
 ];
 
 
@@ -43,13 +44,20 @@ export default class MainGame extends Phaser.Scene {
   private totalTime = LEVELS[0].time; // en segundos
   private matchValue = 20;
   private levelUpSound!: Phaser.Sound.BaseSound;
-
+  private levelUpScreen!: LevelUpScreen;
+  private swapCandySound!: Phaser.Sound.BaseSound;
+  private shuffleCandySound!: Phaser.Sound.BaseSound;
+  private comboCount = 1;
+  private comboTimer!: Phaser.Time.TimerEvent;
+  private comboThreshold = 1500; // 1.5 segundos
+  private comboText!: Phaser.GameObjects.Text;
+  private comboSound!: Phaser.Sound.BaseSound;
 
   private progressBar!: Phaser.GameObjects.Graphics
   private progressFrame!: Phaser.GameObjects.Image
   private progressTimer!: Phaser.Time.TimerEvent
   private eventObserver: EventObserver;
-  private gameState: 'playing' | 'ended' = 'playing';
+  private gameState: 'playing' | 'paused' | 'ended' = 'playing';
   private closeButton: CloseButton;
 
   preload() {
@@ -98,6 +106,7 @@ export default class MainGame extends Phaser.Scene {
         })
       })
     }
+    this.comboText.setY(this.offsetY - 50);
   }
 
   private createCandy(x: number, y: number, frame: number, row: number, col: number): Phaser.GameObjects.Sprite {
@@ -123,7 +132,7 @@ export default class MainGame extends Phaser.Scene {
   }
 
   private handleCandyClick(candy: Phaser.GameObjects.Sprite) {
-    if (this.gameState === 'ended') return;
+    if (this.gameState !== 'playing') return;
     if (this.movingCandiesInProcess) return;
 
     if (!this.selectedCandy) {
@@ -173,6 +182,7 @@ export default class MainGame extends Phaser.Scene {
     })
     
     // Intercambio lógico en la grilla
+    this.swapCandySound.play();
     this.grid[row1][col1] = c2
     this.grid[row2][col2] = c1
 
@@ -320,19 +330,30 @@ export default class MainGame extends Phaser.Scene {
     this.scoreGoal = newLevel.goal;
     this.totalTime = newLevel.time;
 
-    // Reiniciar tiempo
-    this.progressTimer.destroy();
-    this.progressTimer = this.time.addEvent({
-        delay: this.totalTime * 1000,
-        callback: () => {
-        this.endGame();
-        }
-    });
+    // Pausar lógica del juego
+    this.gameState = 'paused';
 
-    this.updateProgressBar(1);
+    // Mostrar pantalla de nivel
+    this.levelUpScreen.show(newLevel.level, newLevel.goal);
     this.levelUpSound.play();
+    this.updateProgressBar(1);
     console.log(`Nivel ${newLevel.level} iniciado. Meta: ${newLevel.goal}, Tiempo: ${newLevel.time}s`);
- }
+
+    // Esperar a que se cierre el popup y luego reiniciar el timer
+    this.time.delayedCall(2700, async () => {
+        this.progressTimer?.destroy();
+
+        // Esperar a que se rellene completamente antes de continuar
+        await this.refillGrid();
+
+        this.progressTimer = this.time.addEvent({
+            delay: this.totalTime * 1000,
+            callback: () => this.endGame(),
+        });
+
+        this.gameState = 'playing';
+    });
+  }
 
   private endGame() {
     this.gameState = 'ended';
@@ -349,22 +370,54 @@ export default class MainGame extends Phaser.Scene {
   }
 
   private removeMatches(matches: Phaser.GameObjects.Sprite[]) {
-    //console.log("match.lenght", matches.length * 10);
-    this.updateScore(matches.length * this.matchValue) 
+    // Calcular Combos
+    const basePoints = matches.length * 10;
+    const points = basePoints * this.comboCount;
+    console.log("basePoints: ", basePoints);
+    console.log("this.comboCount: ", this.comboCount);
+    console.log("combo points: ", points);
+    this.updateScore(points);
+
+    // Mostrar texto de combo si es mayor a x1
+    if (this.comboCount > 1 && this.gameState === 'playing') {
+        this.comboSound.play();
+        this.showComboText(`x${this.comboCount}`);
+    }
+    this.comboCount++;
+
+    // Reiniciar el temporizador de combo
+    if (this.comboTimer) this.comboTimer.remove();
+
+    this.comboTimer = this.time.delayedCall(this.comboThreshold, () => {
+        this.comboCount = 1;
+    });
+
+    // Eliminar los caramelos del grid
     matches.forEach(candy => {
-        const row = candy.getData('row')
-        const col = candy.getData('col')
+        const row = candy.getData('row');
+        const col = candy.getData('col');
+        candy.destroy();
+        this.grid[row][col] = null;
+    });
+ }
 
-        // Eliminar visualmente
-        candy.destroy()
+  private showComboText(text: string) {
+    this.comboText.setText(text);
+    this.comboText.setAlpha(1);
+    this.comboText.setScale(1);
+    this.comboText.y = this.offsetY - 50;
 
-        // Eliminar de la grilla lógica
-        this.grid[row][col] = null
-    })
+    this.tweens.add({
+        targets: this.comboText,
+        y: this.offsetY - 80,
+        alpha: 0,
+        duration: 800,
+        ease: 'Cubic.easeOut'
+    });
   }
 
   private dropCandies() {
-    if (this.gameState === 'ended') return;
+    if (this.gameState !== 'playing') return;
     for (let col = 0; col < GRID_WIDTH; col++) {
         for (let row = GRID_HEIGHT - 1; row >= 0; row--) {
             if (this.grid[row][col] === null) {
@@ -393,56 +446,64 @@ export default class MainGame extends Phaser.Scene {
     }
   }
 
-  private refillGrid() {
-    if (this.gameState === 'ended') return;
-    for (let row = 0; row < GRID_HEIGHT; row++) {
+  private refillGrid(): Promise<void> {
+    return new Promise((resolve) => {
+        if (this.gameState !== 'playing' && this.gameState !== 'paused') return resolve();
+
+        for (let row = 0; row < GRID_HEIGHT; row++) {
         for (let col = 0; col < GRID_WIDTH; col++) {
             if (!this.grid[row][col]) {
-                const candyType = Phaser.Math.Between(1,6)
-                const { x, y } = this.getCandyPosition(row, col)
-                const initialY = y - 2 * (CANDY_HEIGHT + GAP)
+            const candyType = Phaser.Math.Between(1, 9)
+            const { x, y } = this.getCandyPosition(row, col)
+            const initialY = y - 2 * (CANDY_HEIGHT + GAP)
 
-                const candy = this.add.sprite(x, initialY, 'candies', candyType).setScale(0.6)
-                candy.setData('type', candyType)
-                candy.setData('row', row)
-                candy.setData('col', col)
-                candy.setInteractive()
-                candy.on('pointerdown', () => this.handleCandyClick(candy))
+            const candy = this.add.sprite(x, initialY, 'candies', candyType).setScale(0.6)
+            candy.setData('type', candyType)
+            candy.setData('row', row)
+            candy.setData('col', col)
+            candy.setInteractive()
+            candy.on('pointerdown', () => this.handleCandyClick(candy))
 
-                this.grid[row][col] = candy
+            this.grid[row][col] = candy
 
-                // animar caída
-                this.tweens.add({
-                    targets: candy,
-                    y: y,
-                    duration: 300
-                })
+            this.tweens.add({
+                targets: candy,
+                y: y,
+                duration: 300
+            })
             }
         }
-    }
+        }
 
-    this.time.delayedCall(350, () => {
+        this.time.delayedCall(350, async () => {
         const newMatches = this.getMatches()
         if (newMatches.length > 0) {
-            console.log('MATCH AUTOMÁTICO:', newMatches.length)
             this.removeMatches(newMatches)
-
             this.time.delayedCall(300, () => {
-                this.dropCandies()
-                this.time.delayedCall(300, () => {
-                this.refillGrid() // se repite hasta que ya no haya más
-                })
+            this.dropCandies()
+            this.time.delayedCall(300, async () => {
+                await this.refillGrid()
+                resolve()
+            })
             })
         } else {
             if (!this.hasPossibleMoves()) {
-                this.shuffleBoard()
-                this.time.delayedCall(100, () => this.refillGrid())
+            this.showShuffleMessage()
+            this.shuffleCandySound.play()
+            this.shuffleBoard()
+            this.time.delayedCall(200, async () => {
+                await this.refillGrid()
+                resolve()
+            })
             } else {
-                this.movingCandiesInProcess = false 
+            this.movingCandiesInProcess = false
+            resolve()
             }
         }
+        })
     })
   }
+
 
   private swapData(c1: Phaser.GameObjects.Sprite, c2: Phaser.GameObjects.Sprite) {
     const row1 = c1.getData('row')
@@ -492,34 +553,67 @@ export default class MainGame extends Phaser.Scene {
   }
 
   private shuffleBoard() {
-    const candies: Phaser.GameObjects.Sprite[] = []
+    const candies: Phaser.GameObjects.Sprite[] = [];
 
-    // Recolectar todos los caramelos
+    // Recolectar todos los caramelos válidos
     for (let row = 0; row < GRID_HEIGHT; row++) {
         for (let col = 0; col < GRID_WIDTH; col++) {
-            const candy = this.grid[row][col]
-            if (candy) {
-                candies.push(candy);
-            }
+        const candy = this.grid[row][col];
+        if (candy) { // solo si no es null
+            candies.push(candy);
+        }
         }
     }
 
-    // Barajar
-    Phaser.Utils.Array.Shuffle(candies)
+    if (candies.length !== GRID_WIDTH * GRID_HEIGHT) {
+        this.refillGrid(); // asegúrate de rellenar primero
+        return;
+    }
 
-    // Reasignar a la grilla con nuevas posiciones
-    let i = 0
+    Phaser.Utils.Array.Shuffle(candies);
+
+    let i = 0;
     for (let row = 0; row < GRID_HEIGHT; row++) {
         for (let col = 0; col < GRID_WIDTH; col++) {
-        const candy = candies[i++]
-        const { x, y } = this.getCandyPosition(row, col)
+        const candy = candies[i++];
+        const { x, y } = this.getCandyPosition(row, col);
 
-        candy.setPosition(x, y)
-        candy.setData('row', row)
-        candy.setData('col', col)
-        this.grid[row][col] = candy
+        candy.setPosition(x, y);
+        candy.setData('row', row);
+        candy.setData('col', col);
+        this.grid[row][col] = candy;
         }
     }
+  }
+
+  private showShuffleMessage() {
+    const width = this.scale.width;
+    const height = this.scale.height;
+
+    const bg = this.add.rectangle(
+        width / 2,
+        height / 2,
+        width * 0.8,     // Ancho en porcentaje
+        60,              // Alto 
+        0x002340,        // Color 
+        0.95             // Opacidad
+    ).setOrigin(0.5).setDepth(10);
+
+    const text = this.add.text(
+        width / 2,
+        height / 2,
+        'No hay jugadas disponibles',
+        {
+        fontSize: '20px',
+        color: '#ffffff',
+        fontFamily: 'montserrat-memo',
+        }
+    ).setOrigin(0.5).setDepth(11)
+
+    this.time.delayedCall(1200, () => {
+        bg.destroy()
+        text.destroy()
+    })
   }
 
   init(data: { levelIndex: number; score: number }) {
@@ -538,14 +632,19 @@ export default class MainGame extends Phaser.Scene {
     this.retryScreen = new RetryScreen(this)
     this.winnerScreen = new WinnerScreen(this)
     this.eventObserver = EventObserver.getInstance();
-    this.levelUpSound = this.sound.add("level_up", {
-        volume: 0.6,
-        loop: false,
-    });
-
-    this.eventObserver.on('button-clicked', (buttonId: string) => {
-    ButtonEventHandler.handleButtonEvents(buttonId, this);
-    });
+    this.levelUpScreen = new LevelUpScreen(this);
+    this.levelUpSound = this.sound.add("level_up", { volume: 0.6, loop: false, });
+    this.swapCandySound = this.sound.add("swap_candy");
+    this.shuffleCandySound = this.sound.add("shuffle_candies");
+    this.comboSound = this.sound.add("combo_sound");
+    this.comboText = this.add.text(this.cameras.main.centerX, this.scale.height / 2, '', {
+    font: '48px montserrat-memo',
+    color: '#FFD700',
+    fontStyle: 'bold'
+    })
+    .setOrigin(0.5)
+    .setAlpha(0)
+    .setDepth(999);
 
     const scoreImage = this.add.image(20, 16, 'score').setOrigin(0, 0)
     const scoreWidth = scoreImage.width;
@@ -579,8 +678,8 @@ export default class MainGame extends Phaser.Scene {
     })
 
     this.closeButton.create();
-		this.eventObserver.on('button-clicked', (buttonId) => {
-			ButtonEventHandler.handleButtonEvents(buttonId, this)
+	this.eventObserver.on('button-clicked', (buttonId) => {
+		ButtonEventHandler.handleButtonEvents(buttonId, this)
 	}, this);
 
     Footer.create(this);

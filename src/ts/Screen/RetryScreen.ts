@@ -23,7 +23,7 @@ export class RetryScreen  {
     this.prompt.setTitle(promptContent.title, 0, -133, 1.2, 1.2);
     this.prompt.setMessage(promptContent.message, 0, -30, 1.2, 1.2);
     this.prompt.setActions(promptContent.actions, 0, 60, 65, 1.2, 1.2);
-    // this.scene.sound.add('retry').play();
+    this.scene.sound.add('retry').play();
     Footer.create(this.scene);
   }
 
