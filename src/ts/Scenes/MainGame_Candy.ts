@@ -16,14 +16,14 @@ const GAP = 6
 
 // LEVELS
 const LEVELS = [
-  { level: 1, goal: 500, time: 42 },
-  { level: 2, goal: 1300, time: 45 },
-  { level: 3, goal: 2500, time: 48 },
-  { level: 4, goal: 3800, time: 52 },
-  { level: 5, goal: 5200, time: 57 },
-  { level: 6, goal: 6700, time: 62 },
-  { level: 7, goal: 8100, time: 66 },
-  { level: 8, goal: 10000, time: 65 },
+  { level: 1, goal: 600, time: 62 },
+  { level: 2, goal: 1300, time: 71 },
+  { level: 3, goal: 2500, time: 85 },
+  { level: 4, goal: 3800, time: 82 },
+  { level: 5, goal: 5200, time: 87 },
+  { level: 6, goal: 6700, time: 88 },
+  { level: 7, goal: 8100, time: 90 },
+  { level: 8, goal: 10000, time: 90 },
 ];
 
 
