@@ -13,17 +13,19 @@ const GRID_HEIGHT = 6
 const CANDY_WIDTH = 116 * 0.6;
 const CANDY_HEIGHT = 116 * 0.6;
 const GAP = 6
+const CANDY_FRAME_START = 1;
+const CANDY_FRAME_END = 7;
 
 // LEVELS
 const LEVELS = [
-  { level: 1, goal: 600, time: 62 },
-  { level: 2, goal: 1300, time: 71 },
-  { level: 3, goal: 2500, time: 85 },
-  { level: 4, goal: 3800, time: 82 },
-  { level: 5, goal: 5200, time: 87 },
-  { level: 6, goal: 6700, time: 88 },
-  { level: 7, goal: 8100, time: 90 },
-  { level: 8, goal: 10000, time: 90 },
+  { level: 1, goal: 600, time: 42 },
+  { level: 2, goal: 1300, time: 56 },
+  { level: 3, goal: 2500, time: 64 },
+  { level: 4, goal: 3800, time: 63 },
+  { level: 5, goal: 5200, time: 70 },
+  { level: 6, goal: 6700, time: 73 },
+  { level: 7, goal: 8100, time: 74 },
+  { level: 8, goal: 10000, time: 75 },
 ];
 
 
@@ -83,7 +85,7 @@ export default class MainGame extends Phaser.Scene {
       this.grid[row] = []
 
       for (let col = 0; col < GRID_WIDTH; col++) {
-        const candyType = Phaser.Math.Between(1, 7)
+        const candyType = Phaser.Math.Between(CANDY_FRAME_START, CANDY_FRAME_END);
 
         const x = this.offsetX + col * (CANDY_WIDTH + GAP) + CANDY_WIDTH / 2
         const y = this.offsetY + row * (CANDY_HEIGHT + GAP) + CANDY_HEIGHT / 2
@@ -453,7 +455,7 @@ export default class MainGame extends Phaser.Scene {
         for (let row = 0; row < GRID_HEIGHT; row++) {
         for (let col = 0; col < GRID_WIDTH; col++) {
             if (!this.grid[row][col]) {
-            const candyType = Phaser.Math.Between(1, 9)
+            const candyType = Phaser.Math.Between(CANDY_FRAME_START, CANDY_FRAME_END);
             const { x, y } = this.getCandyPosition(row, col)
             const initialY = y - 2 * (CANDY_HEIGHT + GAP)
 
@@ -553,38 +555,52 @@ export default class MainGame extends Phaser.Scene {
   }
 
   private shuffleBoard() {
+    const maxAttempts = 20; // evitar bucle infinito
+    let attempts = 0;
+
     const candies: Phaser.GameObjects.Sprite[] = [];
 
-    // Recolectar todos los caramelos válidos
     for (let row = 0; row < GRID_HEIGHT; row++) {
         for (let col = 0; col < GRID_WIDTH; col++) {
-        const candy = this.grid[row][col];
-        if (candy) { // solo si no es null
-            candies.push(candy);
-        }
+            const candy = this.grid[row][col];
+            if (candy) candies.push(candy);
         }
     }
 
     if (candies.length !== GRID_WIDTH * GRID_HEIGHT) {
-        this.refillGrid(); // asegúrate de rellenar primero
+        console.warn('⚠️ Grilla incompleta antes de barajar. Se completará.');
+        this.refillGrid();
         return;
     }
 
-    Phaser.Utils.Array.Shuffle(candies);
+    let hasMoves = false;
 
-    let i = 0;
-    for (let row = 0; row < GRID_HEIGHT; row++) {
-        for (let col = 0; col < GRID_WIDTH; col++) {
-        const candy = candies[i++];
-        const { x, y } = this.getCandyPosition(row, col);
+    do {
+        Phaser.Utils.Array.Shuffle(candies);
 
-        candy.setPosition(x, y);
-        candy.setData('row', row);
-        candy.setData('col', col);
-        this.grid[row][col] = candy;
+        let i = 0;
+        for (let row = 0; row < GRID_HEIGHT; row++) {
+            for (let col = 0; col < GRID_WIDTH; col++) {
+                const candy = candies[i++];
+                const { x, y } = this.getCandyPosition(row, col);
+
+                candy.setPosition(x, y);
+                candy.setData('row', row);
+                candy.setData('col', col);
+                this.grid[row][col] = candy;
+            }
         }
+
+        hasMoves = this.hasPossibleMoves();
+        attempts++;
+    } while (!hasMoves && attempts < maxAttempts);
+
+    if (!hasMoves) {
+        console.warn("🔁 No se pudieron generar jugadas después de múltiples intentos.");
+        this.showShuffleMessage();
     }
-  }
+ }
+
 
   private showShuffleMessage() {
     const width = this.scale.width;

@@ -12,7 +12,8 @@ export default class Preloader extends Phaser.Scene {
 		this.load.path = window.assetFolder ?? "assets/";
 		this.load.spritesheet('diamonds', 'diamonds32x24x5.png', { frameWidth: 32, frameHeight: 24 });
 		this.load.spritesheet("cards", "spritesheet_cards_2x_new.png", { frameWidth: 58 * 2, frameHeight: 58 * 2 });
-        this.load.spritesheet('candies', 'spritesheet_cards_candy.png', { frameWidth: 116, frameHeight: 116, })
+        this.load.spritesheet('candies', 'spritesheet_cards_candy.png', { frameWidth: 116, frameHeight: 116 })
+        this.load.spritesheet('candies_logo', 'spritesheet_cards_candy_logo.png', { frameWidth: 116, frameHeight: 116 })
 
 		this.load.image("progress_frame", "progress_bar_frame.png");
 		this.load.image("progress_bar", "progress_bar_full.png");
