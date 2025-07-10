@@ -6,7 +6,7 @@ const buttons = {
   },
   exitArcor: {
     eventName: 'exit',
-    background: "exit_saphirus_button"
+    background: "exit_arcor_button"
   },
   back: {
     eventName: 'back',

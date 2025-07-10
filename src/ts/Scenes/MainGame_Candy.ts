@@ -14,7 +14,7 @@ const CANDY_WIDTH = 116 * 0.6;
 const CANDY_HEIGHT = 116 * 0.6;
 const GAP = 6
 const CANDY_FRAME_START = 1;
-const CANDY_FRAME_END = 7;
+const CANDY_FRAME_END = 6;
 
 // LEVELS
 const LEVELS = [
@@ -25,7 +25,7 @@ const LEVELS = [
   { level: 5, goal: 5200, time: 70 },
   { level: 6, goal: 6700, time: 73 },
   { level: 7, goal: 8100, time: 74 },
-  { level: 8, goal: 10000, time: 75 },
+  { level: 8, goal: 10000, time: 75 }
 ];
 
 
@@ -63,10 +63,6 @@ export default class MainGame extends Phaser.Scene {
   private closeButton: CloseButton;
 
   preload() {
-    this.load.spritesheet('candies', 'assets/spritesheet_cards_candy.png', {
-      frameWidth: 116,
-      frameHeight: 116,
-    })
     this.load.image('progress-frame', 'assets/progress_bar_frame.png')
   }
 
@@ -111,15 +107,76 @@ export default class MainGame extends Phaser.Scene {
     this.comboText.setY(this.offsetY - 50);
   }
 
-  private createCandy(x: number, y: number, frame: number, row: number, col: number): Phaser.GameObjects.Sprite {
-    const candy = this.add.sprite(x, y, 'candies', frame).setScale(0.6)
-    candy.setData('type', frame)
-    candy.setData('row', row)
-    candy.setData('col', col)
-    candy.setInteractive()
-    candy.on('pointerdown', () => this.handleCandyClick(candy))
-    return candy
+private createCandy(x: number, y: number, frame: number, row: number, col: number): Phaser.GameObjects.Sprite {
+  const candy = this.add.sprite(x, y, 'candies', frame).setScale(0.6);
+  candy.setData('type', frame);
+  candy.setData('row', row);
+  candy.setData('col', col);
+  candy.setInteractive();
+
+  // Eventos de drag
+  candy.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+    if (this.movingCandiesInProcess || this.gameState !== 'playing') return;
+    this.selectedCandy = candy;
+    candy.setScale(0.7); // resaltar visualmente
+    candy.setData('startX', pointer.x);
+    candy.setData('startY', pointer.y);
+  });
+
+  candy.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+    if (!this.selectedCandy) return;
+
+    const dx = pointer.x - this.selectedCandy.getData('startX');
+    const dy = pointer.y - this.selectedCandy.getData('startY');
+
+    const threshold = 30; // mínima distancia para validar drag
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+      // Movimiento horizontal
+      if (dx > threshold) this.trySwap('right');
+      else if (dx < -threshold) this.trySwap('left');
+    } else {
+      // Movimiento vertical
+      if (dy > threshold) this.trySwap('down');
+      else if (dy < -threshold) this.trySwap('up');
+    }
+
+    this.selectedCandy.setScale(0.6); // restaurar tamaño
+    this.selectedCandy = null;
+  });
+
+  return candy;
+}
+
+private trySwap(direction: 'up' | 'down' | 'left' | 'right') {
+  if (!this.selectedCandy || this.movingCandiesInProcess) return;
+
+  const row = this.selectedCandy.getData('row');
+  const col = this.selectedCandy.getData('col');
+
+  let targetRow = row;
+  let targetCol = col;
+
+  switch (direction) {
+    case 'up': targetRow--; break;
+    case 'down': targetRow++; break;
+    case 'left': targetCol--; break;
+    case 'right': targetCol++; break;
   }
+
+  // Fuera de límites
+  if (
+    targetRow < 0 || targetRow >= GRID_HEIGHT ||
+    targetCol < 0 || targetCol >= GRID_WIDTH
+  ) return;
+
+  const neighbor = this.grid[targetRow][targetCol];
+  if (!neighbor) return;
+
+  this.swapCandies(this.selectedCandy, neighbor);
+}
+
+
 
   private areAdjacent(c1: Phaser.GameObjects.Sprite, c2: Phaser.GameObjects.Sprite): boolean {
     const row1 = c1.getData('row')
@@ -133,32 +190,6 @@ export default class MainGame extends Phaser.Scene {
     return isNextTo
   }
 
-  private handleCandyClick(candy: Phaser.GameObjects.Sprite) {
-    if (this.gameState !== 'playing') return;
-    if (this.movingCandiesInProcess) return;
-
-    if (!this.selectedCandy) {
-        // Primer clic: seleccionamos este caramelo
-        this.selectedCandy = candy
-        candy.setScale(0.7) // Lo agrandamos visualmente
-    } else {
-        // Segundo clic: intercambiamos o reseteamos selección
-        const prevCandy = this.selectedCandy
-        prevCandy.setScale(0.6) // restauramos tamaño
-
-        if (prevCandy !== candy) {
-        // Aquí más adelante verificaremos si es movimiento válido
-        //console.log('Intercambiar:', prevCandy.getData('row'), prevCandy.getData('col'), '<->',candy.getData('row'), candy.getData('col')).
-            if (this.areAdjacent(prevCandy, candy)) {
-                this.swapCandies(prevCandy, candy)
-            } else {
-                console.log('No son adyacentes')
-            }
-        }
-
-        this.selectedCandy = null // reiniciamos selección
-    }
-  }
 
   private swapCandies(c1: Phaser.GameObjects.Sprite, c2: Phaser.GameObjects.Sprite) {
     this.movingCandiesInProcess = true
@@ -245,20 +276,21 @@ export default class MainGame extends Phaser.Scene {
         let match: Phaser.GameObjects.Sprite[] = []
 
         for (let col = 0; col < GRID_WIDTH; col++) {
-        const current = this.grid[row][col]
-        const prev = col > 0 ? this.grid[row][col - 1] : null
+            const current = this.grid[row][col]
+            const prev = col > 0 ? this.grid[row][col - 1] : null
+            if (!current || !prev) {
+                if (match.length >= 3) match.forEach(c => matches.add(c));
+                match = [];
+                continue;
+            }
 
-        if (prev && current.getData('type') === prev.getData('type')) {
-            match.push(current)
-            if (match.length === 1) {
-            match.unshift(prev) // incluimos el primero que coincidió
+            if (current.getData('type') === prev.getData('type')) {
+                match.push(current)
+                if (match.length === 1) match.unshift(prev)
+            } else {
+                if (match.length >= 3) match.forEach(c => matches.add(c))
+                match = []
             }
-        } else {
-            if (match.length >= 3) {
-            match.forEach(c => matches.add(c)) // guardamos la combinación
-            }
-            match = [] // reiniciamos
-        }
         }
         if (match.length >= 3) {
             match.forEach(c => matches.add(c)) // por si hay un match al final de la fila
@@ -270,20 +302,21 @@ export default class MainGame extends Phaser.Scene {
         let match: Phaser.GameObjects.Sprite[] = []
 
         for (let row = 0; row < GRID_HEIGHT; row++) {
-        const current = this.grid[row][col]
-        const prev = row > 0 ? this.grid[row - 1][col] : null
+            const current = this.grid[row][col]
+            const prev = row > 0 ? this.grid[row - 1][col] : null
+            if (!current || !prev) {
+                if (match.length >= 3) match.forEach(c => matches.add(c));
+                match = [];
+                continue;
+            }
 
-        if (prev && current.getData('type') === prev.getData('type')) {
-            match.push(current)
-            if (match.length === 1) {
-            match.unshift(prev)
-            }
-        } else {
-            if (match.length >= 3) {
-            match.forEach(c => matches.add(c))
-            }
-            match = []
-        }
+            if (current.getData('type') === prev.getData('type')) {
+                match.push(current)
+                if (match.length === 1) match.unshift(prev)
+            } else {
+                if (match.length >= 3) match.forEach(c => matches.add(c))
+                match = []
+                }
         }
         if (match.length >= 3) {
         match.forEach(c => matches.add(c))
@@ -299,6 +332,7 @@ export default class MainGame extends Phaser.Scene {
     this.scoreText.setText(this.scoreValue.toString())
 
     if (this.scoreValue >= this.scoreGoal && this.gameState !== 'ended') {
+        this.progressTimer?.remove(false); 
         if (this.currentLevelIndex === LEVELS.length - 1) {
             this.endGame(); // nivel final
         } else {
@@ -358,8 +392,11 @@ export default class MainGame extends Phaser.Scene {
   }
 
   private endGame() {
+    if (this.gameState === 'ended') return; 
     this.gameState = 'ended';
     this.movingCandiesInProcess = false
+
+    this.progressTimer?.remove(false);
 
     if (this.scoreValue >= this.scoreGoal) {
         this.winnerScreen.show(prompt.win, "winner_screen");
@@ -455,24 +492,20 @@ export default class MainGame extends Phaser.Scene {
         for (let row = 0; row < GRID_HEIGHT; row++) {
         for (let col = 0; col < GRID_WIDTH; col++) {
             if (!this.grid[row][col]) {
-            const candyType = Phaser.Math.Between(CANDY_FRAME_START, CANDY_FRAME_END);
-            const { x, y } = this.getCandyPosition(row, col)
-            const initialY = y - 2 * (CANDY_HEIGHT + GAP)
+                const candyType = Phaser.Math.Between(CANDY_FRAME_START, CANDY_FRAME_END);
+                const { x, y } = this.getCandyPosition(row, col)
+                const initialY = y - 2 * (CANDY_HEIGHT + GAP)
 
-            const candy = this.add.sprite(x, initialY, 'candies', candyType).setScale(0.6)
-            candy.setData('type', candyType)
-            candy.setData('row', row)
-            candy.setData('col', col)
-            candy.setInteractive()
-            candy.on('pointerdown', () => this.handleCandyClick(candy))
+                const candy = this.createCandy(x, y, candyType, row, col);
+                candy.y = initialY;
 
-            this.grid[row][col] = candy
-
-            this.tweens.add({
+                this.tweens.add({
                 targets: candy,
                 y: y,
                 duration: 300
-            })
+                });
+
+                this.grid[row][col] = candy;
             }
         }
         }

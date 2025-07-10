@@ -38,7 +38,7 @@ export default class Preloader extends Phaser.Scene {
 		// this.load.image("retry_button", "retry-btn.png");
 		this.load.image("seguiintentando_title", "segui-intentando.png");
 		this.load.image("porpoco_title", "porpoco_title.png");
-		this.load.image("exit_saphirus_button", "ir_a_tienda.png");
+		this.load.image("exit_arcor_button", "ir_a_tienda.png");
 		this.load.image("winner_screen", "win_screen.png");
 		this.load.image("win_title", "win_title.png");
 		this.load.image("win_message", "win_message.png");
@@ -49,7 +49,6 @@ export default class Preloader extends Phaser.Scene {
 		this.load.image("copy_coupon_button", "copy_coupon_button.png");
 		this.load.image("copied_coupon_button", "copied_button.png");
 		this.load.image("coupon_code_container", "coupon_code_container.png");
-		//this.load.image("saphirus_coin", "saphirus_coin.png");
 
 		this.load.image("logo_candy_Arcor", "logo-candy-arcor.png");
         this.load.image("logo_candy_Arcor_win", "logo_candy_Arcor_win.png");

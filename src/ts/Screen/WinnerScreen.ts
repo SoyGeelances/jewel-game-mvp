@@ -10,7 +10,7 @@ export class WinnerScreen  {
   private prompt: PromptScreen;
   public couponCode: Phaser.GameObjects.Text;
   private couponCodeContainer: Phaser.GameObjects.Image;
-  private saphirusCoin: Phaser.GameObjects.Image;
+  private arcorCoin: Phaser.GameObjects.Image;
   private finalScore: Phaser.GameObjects.Text;
   eventObserver: EventObserver;
 
@@ -109,10 +109,10 @@ export class WinnerScreen  {
   }
 
   private setWinnerScore() {
-    /*this.saphirusCoin = this.scene.add.image(
+    /*this.arcorCoin = this.scene.add.image(
         this.scene.cameras.main.centerX - 75,
         this.scene.cameras.main.centerY - 10,
-        "saphirus_coin"
+        "arcor_coin"
     )
     .setOrigin(0.5, 0.5)
     .setDepth(10)
@@ -132,7 +132,7 @@ export class WinnerScreen  {
     .setScale(1.1, 1.1);
 
     /*this.scene.tweens.add({
-      targets: this.saphirusCoin,
+      targets: this.arcorCoin,
       scaleX: 0, // Achica la moneda en su eje X
       duration: 500, // Duración de la primera mitad del giro
       yoyo: true, // Hace que el tween vuelva a su estado original
@@ -140,7 +140,7 @@ export class WinnerScreen  {
       ease: 'Sine.easeInOut', // Tipo de easing
       onUpdate: () => {
           // Cambia el frame de la moneda en el punto medio de la animación (cuando scaleX llega a 0)
-          if (this.saphirusCoin.scaleX === 0) {
+          if (this.arcorCoin.scaleX === 0) {
               // Aquí podrías cambiar la imagen o el frame si quieres
           }
       }

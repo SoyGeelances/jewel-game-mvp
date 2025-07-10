@@ -16,7 +16,7 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 	type: Phaser.AUTO,
 	transparent: true,
 	parent: "content",
-	title: "Juego de Memotest para Saphirus"
+	title: "Juego Candy para Arcor"
 };
 
 export default class Game extends Phaser.Game {
