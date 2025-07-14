@@ -241,7 +241,7 @@ export default class MainMenu extends Phaser.Scene {
 		});
 		logo.setOrigin(0.5, 0);
 
-        const playButton = this.add.image(this.cameras.main.centerX, this.cameras.main.centerY * 1.2, "play").setScale(0);
+        const playButton = this.add.image(this.cameras.main.centerX, this.cameras.main.centerY * 1.2, "play").setScale(0).setDepth(7);
         this.tweens.add({
 			targets: playButton,
 			scale: 1,

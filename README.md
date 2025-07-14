@@ -13,7 +13,7 @@ The following is a starter project to get started with a new game in Phaser 3 an
 5. Run `npm run build` to populate the **public** directory with the final site contents.
 6. Copy the contents of **public** to the site of your choice.
 
-## What This Project Provides
+## What This Project Provides 
 
 - src
 	- assets
@@ -64,6 +64,7 @@ If you'd like to lint your TypeScript/JavaScript, run `npm run lint`.
 To upgrade Phaser 3 run `npm upgrade --save phaser`.
 
 ## Upgrading Other Packages
+
 
 ESLint:
 
