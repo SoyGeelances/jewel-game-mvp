@@ -14,7 +14,7 @@ const CANDY_WIDTH = 116 * 0.6;
 const CANDY_HEIGHT = 116 * 0.6;
 const GAP = 6
 const CANDY_FRAME_START = 1;
-const CANDY_FRAME_END = 5;
+const CANDY_FRAME_END = 4;
 
 // LEVELS
 const LEVELS = [
@@ -56,8 +56,7 @@ export default class MainGame extends Phaser.Scene {
   private comboText!: Phaser.GameObjects.Text;
   private comboSound!: Phaser.Sound.BaseSound;
   private comboX5Sound!: Phaser.Sound.BaseSound;
-  private scoreBar!: Phaser.GameObjects.Graphics;
-  private scoreBarBg!: Phaser.GameObjects.Graphics;
+  private logoColor!: Phaser.GameObjects.Image;
 
   private progressBar!: Phaser.GameObjects.Graphics
   private progressFrame!: Phaser.GameObjects.Image
@@ -278,7 +277,8 @@ export default class MainGame extends Phaser.Scene {
     //console.log("score",this.scoreValue);
     this.scoreText.setText(this.scoreValue.toString())
     const progress = Phaser.Math.Clamp(this.scoreValue / this.scoreGoal, 0, 1);
-    this.updateScoreBar(progress);
+    const width = this.logoColor.width * progress;
+this.logoColor.setCrop(0, 0, width, this.logoColor.height);
 
     if (this.scoreValue >= this.scoreGoal && this.gameState !== 'ended') {
         this.progressTimer?.remove(false); 
@@ -303,19 +303,6 @@ export default class MainGame extends Phaser.Scene {
     this.progressBar.fillStyle(0x3dc51f, 1)
     this.progressBar.fillRoundedRect(x, y, barWidth * progress, barHeight, radius);
   }
-
-  private updateScoreBar(progress: number) {
-    const barWidth = 320;
-    const barHeight = 20;
-    const x = 20;
-    const y = 120;
-    const radius = 8;
-
-    this.scoreBar.clear();
-    this.scoreBar.fillStyle(0x00bfff, 1); // azul celeste
-    this.scoreBar.fillRoundedRect(x, y, barWidth * progress, barHeight, radius);
-  }
-
 
   private nextLevel() {
     this.currentLevelIndex++;
@@ -351,8 +338,6 @@ export default class MainGame extends Phaser.Scene {
 
         this.gameState = 'playing';
     });
-
-    this.updateScoreBar(0); // reinicia la barra de score
   }
 
   private endGame() {
@@ -428,7 +413,7 @@ export default class MainGame extends Phaser.Scene {
 
   private showComboX5Bonus(x: number, y: number) {
         this.comboX5Sound.play()
-        const bonusImage = this.add.image(x, y, 'combo_x5_mogul').setScale(0.7).setDepth(20).setAlpha(0.9);
+        const bonusImage = this.add.image(x, y, 'combo_x5_mogul').setScale(0.5).setDepth(20).setAlpha(0.9);
 
         this.tweens.add({
             targets: bonusImage,
@@ -718,16 +703,16 @@ export default class MainGame extends Phaser.Scene {
     this.levelUpSound = this.sound.add("level_up", { volume: 0.6, loop: false, });
     this.swapCandySound = this.sound.add("swap_candy");
     this.shuffleCandySound = this.sound.add("shuffle_candies");
-    // Barra de score (fondo y barra real)
-    const scoreBarWidth = 320;
-    const scoreBarHeight = 20;
-    const barX = 20;
-    const barY = 120;
-    this.scoreBarBg = this.add.graphics().setDepth(1);
-    this.scoreBarBg.fillStyle(0xffffff, 0.2); // fondo semitransparente blanco
-    this.scoreBarBg.fillRoundedRect(barX, barY, scoreBarWidth, scoreBarHeight, 8);
-    this.scoreBar = this.add.graphics().setDepth(1);
-    this.updateScoreBar(0); // empieza vacía
+const logoX = this.cameras.main.centerX;
+const logoY = 100; // o cualquier valor fijo que prefieras
+
+this.add.image(logoX, logoY, 'logo_mogul_white').setOrigin(0.5).setDepth(30);
+
+this.logoColor = this.add.image(logoX, logoY, 'logo_mogul_color')
+    .setOrigin(0.5)
+    .setDepth(31)
+    .setCrop(0, 0, 0, 60);
+
 
     this.comboSound = this.sound.add("combo_sound");
     this.comboX5Sound = this.sound.add("combo_x5_sound");
