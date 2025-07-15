@@ -26,6 +26,7 @@ export default class Preloader extends Phaser.Scene {
 		this.load.image("background", "background.png");
         this.load.image("background_main", "background_main.png");
         this.load.image('prompt_bg', 'background_main.png');
+        this.load.image("combo_x5_mogul", "combo_x5_mogul.png");
 		
 		this.load.image("sound_off", "sound_off.png");
 		this.load.image("sound_on", "sound_on.png");
@@ -69,6 +70,7 @@ export default class Preloader extends Phaser.Scene {
 		this.load.audio("swap_candy", "swap-candy.mp3");
         this.load.audio("shuffle_candies", "shuffle_candies.mp3")
         this.load.audio("combo_sound", "combo_sound.mp3")
+        this.load.audio("combo_x5_sound", "combo_x5_sound.mp3")
 
 		// You should remove this logic; this is only included here to show off the progress bar.
 
