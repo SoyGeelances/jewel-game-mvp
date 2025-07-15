@@ -14,7 +14,7 @@ const CANDY_WIDTH = 116 * 0.6;
 const CANDY_HEIGHT = 116 * 0.6;
 const GAP = 6
 const CANDY_FRAME_START = 1;
-const CANDY_FRAME_END = 4;
+const CANDY_FRAME_END = 6;
 
 // LEVELS
 const LEVELS = [
@@ -43,6 +43,7 @@ export default class MainGame extends Phaser.Scene {
   private scoreValue = 0
   private scoreGoal = LEVELS[0].goal;
   private scoreText!: Phaser.GameObjects.Text
+  private levelStartScore = 0;
   private currentLevelIndex = 0;
   private totalTime = LEVELS[0].time; // en segundos
   private matchValue = 20;
@@ -276,9 +277,11 @@ export default class MainGame extends Phaser.Scene {
     this.scoreValue += points
     //console.log("score",this.scoreValue);
     this.scoreText.setText(this.scoreValue.toString())
-    const progress = Phaser.Math.Clamp(this.scoreValue / this.scoreGoal, 0, 1);
+    const relativeScore = this.scoreValue - this.levelStartScore;
+    const goalForLevel = this.scoreGoal - this.levelStartScore;
+    const progress = Phaser.Math.Clamp(relativeScore / goalForLevel, 0, 1);
     const width = this.logoColor.width * progress;
-this.logoColor.setCrop(0, 0, width, this.logoColor.height);
+    this.logoColor.setCrop(0, 0, width, this.logoColor.height);
 
     if (this.scoreValue >= this.scoreGoal && this.gameState !== 'ended') {
         this.progressTimer?.remove(false); 
@@ -314,6 +317,8 @@ this.logoColor.setCrop(0, 0, width, this.logoColor.height);
     const newLevel = LEVELS[this.currentLevelIndex];
     this.scoreGoal = newLevel.goal;
     this.totalTime = newLevel.time;
+    this.levelStartScore = this.scoreValue;
+    this.logoColor.setCrop(0, 0, 0, this.logoColor.height);
 
     // Pausar lógica del juego
     this.gameState = 'paused';
@@ -690,6 +695,7 @@ this.logoColor.setCrop(0, 0, width, this.logoColor.height);
     const level = LEVELS[this.currentLevelIndex];
     this.scoreGoal = level.goal;
     this.totalTime = level.time;
+    this.levelStartScore = this.scoreValue;
   }
 
 
@@ -703,27 +709,18 @@ this.logoColor.setCrop(0, 0, width, this.logoColor.height);
     this.levelUpSound = this.sound.add("level_up", { volume: 0.6, loop: false, });
     this.swapCandySound = this.sound.add("swap_candy");
     this.shuffleCandySound = this.sound.add("shuffle_candies");
-const logoX = this.cameras.main.centerX;
-const logoY = 100; // o cualquier valor fijo que prefieras
-
-this.add.image(logoX, logoY, 'logo_mogul_white').setOrigin(0.5).setDepth(30);
-
-this.logoColor = this.add.image(logoX, logoY, 'logo_mogul_color')
-    .setOrigin(0.5)
-    .setDepth(31)
-    .setCrop(0, 0, 0, 60);
-
+    const logoX = 13;
+    const logoY = 13; 
+    this.add.image(logoX, logoY, 'logo_mogul_white').setScale(0.3).setOrigin(0,0).setDepth(30);
+    this.logoColor = this.add.image(logoX, logoY, 'logo_mogul_color').setScale(0.3).setOrigin(0,0).setDepth(31).setCrop(0, 0, 0, 60);
 
     this.comboSound = this.sound.add("combo_sound");
     this.comboX5Sound = this.sound.add("combo_x5_sound");
     this.comboText = this.add.text(this.cameras.main.centerX, this.scale.height / 2, '', {
-    font: '48px montserrat-memo',
-    color: '#FFD700',
-    fontStyle: 'bold'
-    })
-    .setOrigin(0.5)
-    .setAlpha(0)
-    .setDepth(999);
+        font: '48px montserrat-memo',
+        color: '#FFD700',
+        fontStyle: 'bold'
+    }).setOrigin(0.5).setAlpha(0).setDepth(999);
 
     document.addEventListener('mouseup', this.handleGlobalMouseUp); //Detectar movimiento fuera del canvas
 
