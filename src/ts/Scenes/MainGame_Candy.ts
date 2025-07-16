@@ -57,6 +57,9 @@ export default class MainGame extends Phaser.Scene {
   private comboText!: Phaser.GameObjects.Text;
   private comboSound!: Phaser.Sound.BaseSound;
   private comboX5Sound!: Phaser.Sound.BaseSound;
+  private earthRocksSound!: Phaser.Sound.BaseSound;
+  private electricSparksSound!: Phaser.Sound.BaseSound;
+  private powerDowmSound!: Phaser.Sound.BaseSound;
   private logoColor!: Phaser.GameObjects.Image;
 
   private progressBar!: Phaser.GameObjects.Graphics
@@ -309,41 +312,49 @@ export default class MainGame extends Phaser.Scene {
 
   private nextLevel() {
     this.currentLevelIndex++;
+
     if (this.currentLevelIndex >= LEVELS.length) {
-        this.endGame(); // WIN
+        this.endGame(); // nivel final
         return;
     }
 
     const newLevel = LEVELS[this.currentLevelIndex];
+
     this.scoreGoal = newLevel.goal;
     this.totalTime = newLevel.time;
     this.levelStartScore = this.scoreValue;
-    this.logoColor.setCrop(0, 0, 0, this.logoColor.height);
 
-    // Pausar lógica del juego
     this.gameState = 'paused';
 
-    // Mostrar pantalla de nivel
-    this.levelUpScreen.show(newLevel.level, newLevel.goal);
-    this.levelUpSound.play();
-    this.updateProgressBar(1);
-    //console.log(`Nivel ${newLevel.level} iniciado. Meta: ${newLevel.goal}, Tiempo: ${newLevel.time}s`);
-
-    // Esperar a que se cierre el popup y luego reiniciar el timer
-    this.time.delayedCall(2700, async () => {
-        this.progressTimer?.destroy();
-
-        // Esperar a que se rellene completamente antes de continuar
-        await this.refillGrid();
-
-        this.progressTimer = this.time.addEvent({
-            delay: this.totalTime * 1000,
-            callback: () => this.endGame(),
-        });
-
-        this.gameState = 'playing';
-    });
+    // Mostrar LevelUpScreen y esperar confirmación del jugador
+    this.showLevelUpScreen(newLevel.level, newLevel.goal);
   }
+
+private showLevelUpScreen(level: number, goal: number) {
+  this.levelUpSound.play();
+  this.updateProgressBar(1);
+  this.logoColor.setCrop(0, 0, 0, this.logoColor.height);
+
+  this.levelUpScreen.once('closed', () => {
+    this.startNextLevel();
+  });
+
+  this.levelUpScreen.show(level, goal);
+}
+
+
+private async startNextLevel() {
+  await this.refillGrid(); // se asegura que esté lleno y sin matches
+
+  this.progressTimer?.destroy();
+  this.progressTimer = this.time.addEvent({
+    delay: this.totalTime * 1000,
+    callback: () => this.endGame(),
+  });
+
+  this.gameState = 'playing';
+}
+
 
   private endGame() {
     if (this.gameState === 'ended') return; 
@@ -389,6 +400,10 @@ export default class MainGame extends Phaser.Scene {
     });
 
     if (matches.length >= 5) {
+        this.cameras.main.shake(220, 0.006); // duración, intensidad
+        this.cameras.main.flash(50, 100, 100, 255);
+        //this.earthRocksSound.play();
+
         if (this.lastMovedCandy) {
             this.showComboX5Bonus(this.lastMovedCandy.x, this.lastMovedCandy.y);
             //console.log("scoreValue antes: ", this.scoreValue);
@@ -406,15 +421,40 @@ export default class MainGame extends Phaser.Scene {
         // animar un fade rápido y luego destruir
         this.tweens.add({
             targets: candy,
-            scale: 0,       // contraer completamente
-            duration: 200,  // animación rápida
-            ease: 'Back.easeIn', // animación con rebote hacia adentro
-            onComplete: () => candy.destroy()
+            scale: 0,      
+            duration: 200,  
+            ease: 'Back.easeIn', 
+             onComplete: () => {
+                //this.SparkleEffect(candy.x, candy.y);  Efecto sparkle
+                candy.destroy();
+            }
         });
     });
 
     this.lastMovedCandy = null; //limpiar caramelo seleccionado
  }
+
+  private SparkleEffect(x: number, y: number) {
+    const emitter = this.add.particles(x, y, 'sparkle', {
+        speed: { min: 60, max: 120 },
+        angle: { min: 0, max: 360 },
+        scale: { start: 0.3, end: 0 },
+        alpha: { start: 1, end: 0 },
+        lifespan: 250,
+        quantity: 5,
+        gravityY: 0,
+        blendMode: 'LIGHTEN',
+        emitZone: {
+        type: 'random',
+        source: new Phaser.Geom.Circle(0, 0, 20)
+        }
+    });
+    emitter.setDepth(0); // o -1 si querés asegurarte
+
+    this.time.delayedCall(300, () => {
+        emitter.destroy();
+    });
+  }
 
   private showComboX5Bonus(x: number, y: number) {
         this.comboX5Sound.play()
@@ -425,7 +465,7 @@ export default class MainGame extends Phaser.Scene {
             y: y - 45,
             x: this.scale.width / 2 - 18,
             alpha: 0,
-            duration: 1300,
+            duration: 1900,
             ease: 'Cubic.easeOut',
             onComplete: () => bonusImage.destroy()
         });
@@ -713,9 +753,14 @@ export default class MainGame extends Phaser.Scene {
     const logoY = 13; 
     this.add.image(logoX, logoY, 'logo_mogul_white').setScale(0.3).setOrigin(0,0).setDepth(30);
     this.logoColor = this.add.image(logoX, logoY, 'logo_mogul_color').setScale(0.3).setOrigin(0,0).setDepth(31).setCrop(0, 0, 0, 60);
+    this.powerDowmSound = this.sound.add("power_down_sound");
+    this.electricSparksSound = this.sound.add("electric_sparks_sound");
+    this.powerDowmSound.play();
+    this.electricSparksSound.play()
 
     this.comboSound = this.sound.add("combo_sound");
     this.comboX5Sound = this.sound.add("combo_x5_sound");
+    this.earthRocksSound = this.sound.add("earth_rocks_sound");
     this.comboText = this.add.text(this.cameras.main.centerX, this.scale.height / 2, '', {
         font: '48px montserrat-memo',
         color: '#FFD700',

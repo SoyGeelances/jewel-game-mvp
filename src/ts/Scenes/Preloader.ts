@@ -14,6 +14,7 @@ export default class Preloader extends Phaser.Scene {
 		this.load.spritesheet("cards", "spritesheet_cards_2x_new.png", { frameWidth: 58 * 2, frameHeight: 58 * 2 });
         this.load.spritesheet('candies', 'spritesheet_cards_candy.png', { frameWidth: 116, frameHeight: 116 })
         this.load.spritesheet('candies_logo', 'spritesheet_cards_candy_logo.png', { frameWidth: 116, frameHeight: 116 })
+        this.load.spritesheet('spritesheet_thunder_explo', 'spritesheet_thunder_explo.png', { frameWidth: 116, frameHeight: 116 })
 
 		this.load.image("progress_frame", "progress_bar_frame.png");
 		this.load.image("progress_bar", "progress_bar_full.png");
@@ -23,6 +24,8 @@ export default class Preloader extends Phaser.Scene {
 		this.load.svg("retry_button", "retry_button.svg");
         this.load.image("logo_mogul_color", "logo_mogul_color.png");
         this.load.image("logo_mogul_white", "logo_mogul_white.png");
+        this.load.image('sparkle', 'sparkle_img.png');
+        this.load.image('candy_glow', 'candy_glow_img.png');
 
 		this.load.image("phaser_pixel_medium_flat");
 		this.load.image("background", "background.png");
@@ -73,6 +76,10 @@ export default class Preloader extends Phaser.Scene {
         this.load.audio("shuffle_candies", "shuffle_candies.mp3")
         this.load.audio("combo_sound", "combo_sound.mp3")
         this.load.audio("combo_x5_sound", "combo_x5_sound.mp3")
+        this.load.audio("power_down_sound", "power_down_sound.mp3")
+        this.load.audio("electric_sparks_sound", "electric_sparks_sound.mp3")
+        this.load.audio("clock_ticking_sound", "clock_ticking_sound.mp3")
+        this.load.audio("earth_rocks_sound", "earth_rocks_sound.mp3")
 
 		// You should remove this logic; this is only included here to show off the progress bar.
 
