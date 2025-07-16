@@ -26,6 +26,8 @@ export default class Preloader extends Phaser.Scene {
         this.load.image("logo_mogul_white", "logo_mogul_white.png");
         this.load.image('sparkle', 'sparkle_img.png');
         this.load.image('candy_glow', 'candy_glow_img.png');
+        this.load.image('recarga_masti', 'recarga_masti.png');
+        //this.load.image('recarga_masti', 'recarga_masti.png');
 
 		this.load.image("phaser_pixel_medium_flat");
 		this.load.image("background", "background.png");
@@ -37,6 +39,7 @@ export default class Preloader extends Phaser.Scene {
 		this.load.image("sound_on", "sound_on.png");
 		
 		this.load.image("score", "frame-score.png");
+        this.load.image("ray_effect", "ray_effect.png");
 		this.load.image("final_score", "final_score.png");
 		this.load.image("prompt_screen", "prompt_screen.png");
 		this.load.image("retry_message", "cada-vez-mas-cerca.png");

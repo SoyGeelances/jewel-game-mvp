@@ -14,7 +14,9 @@ const CANDY_WIDTH = 116 * 0.6;
 const CANDY_HEIGHT = 116 * 0.6;
 const GAP = 6
 const CANDY_FRAME_START = 1;
-const CANDY_FRAME_END = 6;
+const CANDY_FRAME_END = 5;
+const LOGO_X = 13;
+const LOGO_Y = 13; 
 
 // LEVELS
 const LEVELS = [
@@ -61,7 +63,7 @@ export default class MainGame extends Phaser.Scene {
   private electricSparksSound!: Phaser.Sound.BaseSound;
   private powerDowmSound!: Phaser.Sound.BaseSound;
   private logoColor!: Phaser.GameObjects.Image;
-
+  private recargaMasti!: Phaser.GameObjects.Image;
   private progressBar!: Phaser.GameObjects.Graphics
   private progressFrame!: Phaser.GameObjects.Image
   private progressTimer!: Phaser.Time.TimerEvent
@@ -727,6 +729,148 @@ private async startNextLevel() {
     }
   }
 
+  private async playIntroAnimation(): Promise<void> {
+    return new Promise((resolve) => {
+        // 1. UI y elementos iniciales
+        const scoreImage = this.add.image(20, 16, 'score').setOrigin(0, 0);
+        const scoreWidth = scoreImage.width;
+        const scoreHeight = scoreImage.height;
+
+        this.scoreText = this.add.text(20 + scoreWidth - 30, 17 + scoreHeight / 2, '0', {
+        fontFamily: 'montserrat-memo',
+        fontSize: '40px',
+        color: '#FEC647',
+        fontStyle: 'bold',
+        }).setOrigin(1, 0.5);
+
+        this.closeButton.create();
+        this.eventObserver.on('button-clicked', (buttonId) => {
+        ButtonEventHandler.handleButtonEvents(buttonId, this);
+        }, this);
+
+        Footer.create(this);
+        this.showIntroText();
+
+        // Efectos del logo
+        this.time.delayedCall(1600, () => {
+        this.spawnFallingCandies(35);
+        this.powerDowmSound.play();
+        this.electricSparksSound.play();
+
+        const lightning = this.add.particles(0, 0, 'ray_effect', {
+            x: { min: LOGO_X - 10, max: LOGO_X + this.logoColor.displayWidth + 10 },
+            y: { min: LOGO_Y - 10, max: LOGO_Y + this.logoColor.displayHeight + 10 },
+            lifespan: 600,
+            speed: 0,
+            quantity: 5,
+            scale: { start: 0.1, end: 0 },
+            angle: { min: 0, max: 360 },
+            alpha: { start: 0.4, end: 0 },
+            rotate: { min: 0, max: 360 },
+            gravityY: 0,
+            blendMode: 'ADD'
+        });
+
+        lightning.setDepth(29);
+
+        this.time.delayedCall(2000, () => {
+            lightning.stop();
+        });
+
+        this.tweens.addCounter({
+            from: 1,
+            to: 0,
+            duration: 2300,
+            onUpdate: (tween) => {
+            const value = tween.getValue();
+            const width = this.logoColor.width * value;
+            this.logoColor.setCrop(0, 0, width, this.logoColor.height);
+            },
+            onComplete: () => resolve()
+        });
+        });
+    });
+  }
+
+  private showIntroText() {
+    this.recargaMasti = this.add.image(this.cameras.main.centerX, this.scale.height / 2, 'recarga_masti').setScale(0.3).setAlpha(0).setDepth(999);
+
+    this.tweens.add({
+        targets: this.recargaMasti,
+        alpha: 0.8,
+        scale: { from: 0.6, to: 0.4 },
+        y: this.scale.height / 2 - 10,
+        duration: 1050,
+        ease: 'Back.Out',
+        yoyo: true,
+        hold: 900,
+        onComplete: () => this.recargaMasti.destroy()
+    });
+  }
+
+
+  private spawnFallingCandies(amount: number) {
+    for (let i = 0; i < amount; i++) {
+        const type = Phaser.Math.Between(0, 8);
+        const x = Phaser.Math.Between(0, this.scale.width + 50);
+        const y = Phaser.Math.Between(-200, -40);
+
+        const candy = this.add.sprite(x, y, 'candies_logo', type)
+        .setAlpha(0.25)
+        .setScale(Phaser.Math.FloatBetween(0.5, 0.6))
+        .setDepth(1)
+        .setAngle(Phaser.Math.Between(-30, 30));
+
+        this.tweens.add({
+        targets: candy,
+        y: this.scale.height + 60,
+        delay: Phaser.Math.Between(600, 1900),
+        duration: 2300,
+        ease: 'Linear',
+        onComplete: () => candy.destroy()
+        });
+    }
+  }
+
+
+private async createGridWithoutMatches() {
+  this.offsetX = (this.scale.width - (GRID_WIDTH * CANDY_WIDTH + (GRID_WIDTH - 1) * GAP)) / 2;
+  const gridHeight = GRID_HEIGHT * CANDY_HEIGHT + (GRID_HEIGHT - 1) * GAP;
+  this.offsetY = (this.scale.height - gridHeight) / 2;
+
+  for (let row = GRID_HEIGHT - 1; row >= 0; row--) {
+    this.grid[row] = [];
+    for (let col = 0; col < GRID_WIDTH; col++) {
+      let candyType;
+      do {
+        candyType = Phaser.Math.Between(CANDY_FRAME_START, CANDY_FRAME_END);
+      } while (
+        (col >= 2 &&
+          this.grid[row][col - 1]?.getData('type') === candyType &&
+          this.grid[row][col - 2]?.getData('type') === candyType) ||
+        (row <= GRID_HEIGHT - 3 &&
+          this.grid[row + 1]?.[col]?.getData('type') === candyType &&
+          this.grid[row + 2]?.[col]?.getData('type') === candyType)
+      );
+
+      const { x, y } = this.getCandyPosition(row, col);
+      const candy = this.createCandy(x, y, candyType, row, col);
+      candy.setAlpha(0);
+
+      this.grid[row][col] = candy;
+
+      this.tweens.add({
+        targets: candy,
+        alpha: 1,
+        duration: 300,
+        delay: (GRID_HEIGHT - row + col) * 40
+      });
+    }
+  }
+
+  return this.delay(900); // Esperar a que termine la animación
+}
+
 
   init(data: { levelIndex: number; score: number }) {
     this.currentLevelIndex = data.levelIndex ?? 0;
@@ -739,7 +883,7 @@ private async startNextLevel() {
   }
 
 
-  create() {
+  async create() {
     this.gameState = 'playing';
     this.closeButton = new CloseButton(this);
     this.retryScreen = new RetryScreen(this)
@@ -749,15 +893,10 @@ private async startNextLevel() {
     this.levelUpSound = this.sound.add("level_up", { volume: 0.6, loop: false, });
     this.swapCandySound = this.sound.add("swap_candy");
     this.shuffleCandySound = this.sound.add("shuffle_candies");
-    const logoX = 13;
-    const logoY = 13; 
-    this.add.image(logoX, logoY, 'logo_mogul_white').setScale(0.3).setOrigin(0,0).setDepth(30);
-    this.logoColor = this.add.image(logoX, logoY, 'logo_mogul_color').setScale(0.3).setOrigin(0,0).setDepth(31).setCrop(0, 0, 0, 60);
+    this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_white').setScale(0.3).setOrigin(0,0).setDepth(30);
+    this.logoColor = this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_color').setScale(0.3).setOrigin(0,0).setDepth(31).setCrop(0, 0, 0, 60);
     this.powerDowmSound = this.sound.add("power_down_sound");
     this.electricSparksSound = this.sound.add("electric_sparks_sound");
-    this.powerDowmSound.play();
-    this.electricSparksSound.play()
-
     this.comboSound = this.sound.add("combo_sound");
     this.comboX5Sound = this.sound.add("combo_x5_sound");
     this.earthRocksSound = this.sound.add("earth_rocks_sound");
@@ -769,17 +908,9 @@ private async startNextLevel() {
 
     document.addEventListener('mouseup', this.handleGlobalMouseUp); //Detectar movimiento fuera del canvas
 
-    const scoreImage = this.add.image(20, 16, 'score').setOrigin(0, 0)
-    const scoreWidth = scoreImage.width;
-    const scoreHeight = scoreImage.height;
-
-    this.scoreText = this.add.text(20 + scoreWidth - 30, 17 + scoreHeight / 2, '0', {
-        fontFamily: 'montserrat-memo',
-        fontSize: '40px',
-        color: '#FEC647',
-        fontStyle: 'bold',
-    })
-    .setOrigin(1, 0.5)
+    await this.playIntroAnimation(); 
+    await this.delay(400);
+    await this.createGridWithoutMatches();
 
     this.progressFrame = this.add.image(this.cameras.main.centerX, this.scale.height - 68, 'progress-frame').setOrigin(0.5)
     this.progressBar = this.add.graphics()
@@ -799,14 +930,6 @@ private async startNextLevel() {
       const progress = Phaser.Math.Clamp(1 - this.progressTimer.getElapsed() / this.progressTimer.delay, 0, 1)
       this.updateProgressBar(progress)
     })
-
-    this.closeButton.create();
-	this.eventObserver.on('button-clicked', (buttonId) => {
-		ButtonEventHandler.handleButtonEvents(buttonId, this)
-	}, this);
-
-    Footer.create(this);
-    this.createGrid()
 
     this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
         if (!this.selectedCandy) return;
