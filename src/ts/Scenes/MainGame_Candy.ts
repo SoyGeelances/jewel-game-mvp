@@ -381,7 +381,7 @@ export default class MainGame extends Phaser.Scene {
   }
 
   private removeMatches(matches: Phaser.GameObjects.Sprite[]) {
-    this.matchSound.play()
+    //this.matchSound.play()
     //console.log("matches: ", matches);
     console.log("removematches");
 
