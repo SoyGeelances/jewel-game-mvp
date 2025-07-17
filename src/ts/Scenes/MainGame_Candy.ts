@@ -25,9 +25,9 @@ const LEVELS = [
   { level: 3, goal: 2500, time: 36 },
   { level: 4, goal: 3800, time: 41 },
   { level: 5, goal: 5200, time: 46 },
-  { level: 6, goal: 6700, time: 47 },
-  { level: 7, goal: 8100, time: 48 },
-  { level: 8, goal: 10000, time: 49 }
+  { level: 6, goal: 6700, time: 49 },
+  { level: 7, goal: 8100, time: 53 },
+  { level: 8, goal: 10000, time: 55 }
 ];
 
 
