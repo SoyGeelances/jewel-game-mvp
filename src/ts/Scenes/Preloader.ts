@@ -15,6 +15,7 @@ export default class Preloader extends Phaser.Scene {
         this.load.spritesheet('candies', 'spritesheet_cards_candy.png', { frameWidth: 116, frameHeight: 116 })
         this.load.spritesheet('candies_logo', 'spritesheet_cards_candy_logo.png', { frameWidth: 116, frameHeight: 116 })
         this.load.spritesheet('spritesheet_thunder_explo', 'spritesheet_thunder_explo.png', { frameWidth: 116, frameHeight: 116 })
+        this.load.spritesheet('spritesheet_confetti', 'spritesheet_confetti.png', { frameWidth: 116, frameHeight: 116 })
 
 		this.load.image("progress_frame", "progress_bar_frame.png");
 		this.load.image("progress_bar", "progress_bar_full.png");
@@ -27,7 +28,6 @@ export default class Preloader extends Phaser.Scene {
         this.load.image('sparkle', 'sparkle_img.png');
         this.load.image('candy_glow', 'candy_glow_img.png');
         this.load.image('recarga_masti', 'recarga_masti.png');
-        //this.load.image('recarga_masti', 'recarga_masti.png');
 
 		this.load.image("phaser_pixel_medium_flat");
 		this.load.image("background", "background.png");
@@ -76,6 +76,7 @@ export default class Preloader extends Phaser.Scene {
 		this.load.audio("cardFlip", "cardFlip.wav");
         this.load.audio("level_up", "level-up.mp3");
 		this.load.audio("swap_candy", "swap-candy.mp3");
+        this.load.audio("match_sound", "match_sound.mp3")
         this.load.audio("shuffle_candies", "shuffle_candies.mp3")
         this.load.audio("combo_sound", "combo_sound.mp3")
         this.load.audio("combo_x5_sound", "combo_x5_sound.mp3")
@@ -83,6 +84,7 @@ export default class Preloader extends Phaser.Scene {
         this.load.audio("electric_sparks_sound", "electric_sparks_sound.mp3")
         this.load.audio("clock_ticking_sound", "clock_ticking_sound.mp3")
         this.load.audio("earth_rocks_sound", "earth_rocks_sound.mp3")
+        this.load.audio("start_level_sound", "start_level_sound.mp3")
 
 		// You should remove this logic; this is only included here to show off the progress bar.
 

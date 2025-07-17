@@ -7,6 +7,36 @@ export class LevelUpScreen extends Phaser.Events.EventEmitter {
   private titleText: Phaser.GameObjects.Text;
   private goalText: Phaser.GameObjects.Text;
   private continueButton: Phaser.GameObjects.Text;
+  
+  private createConfettiEmitter(): void {
+    const centerX = this.scene.scale.width / 2;
+    const centerY = this.scene.scale.height / 2;
+
+    const emitter = this.scene.add.particles(0, 0, 'spritesheet_confetti', {
+        frame: Phaser.Utils.Array.NumberArray(0, 6),
+        speed: { min: 80, max: 160 },
+        angle: { min: -110, max: -70 },
+        gravityY: 80,
+        scale: { start: 0.6, end: 0, ease: 'sine.out' },
+        lifespan: { min: 3000, max: 7500 },
+        quantity: 40,
+        rotate: { min: 0, max: 360 },
+        alpha: { start: 1, end: 0 },
+        frequency: -1
+    });
+
+    this.container.addAt(emitter, 1); //posicionamiento en las capas
+
+    emitter.explode(100, centerX, centerY);
+
+    this.scene.time.delayedCall(500, () => {
+        emitter.explode(80, centerX, centerY);
+    });
+
+    this.scene.time.delayedCall(8000, () => {
+        emitter.destroy();
+    });
+  }
 
   constructor(scene: Phaser.Scene) {
     super();
@@ -45,10 +75,9 @@ export class LevelUpScreen extends Phaser.Events.EventEmitter {
 
     this.continueButton.on('pointerdown', () => {
       this.container.setVisible(false);
-      this.emit('closed'); // <-- ahora control total desde MainGame
+      this.emit('closed'); // Control total desde MainGame
     });
 
-    // Agrupar todo
     this.container = this.scene.add.container(0, 0, [
       this.background,
       this.titleText,
@@ -61,5 +90,6 @@ export class LevelUpScreen extends Phaser.Events.EventEmitter {
     this.titleText.setText(`¡Nivel ${level}!`);
     this.goalText.setText(`Meta: ${goal} puntos`);
     this.container.setVisible(true);
+    this.createConfettiEmitter();
   }
 }

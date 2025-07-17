@@ -15,8 +15,8 @@ const CANDY_HEIGHT = 116 * 0.6;
 const GAP = 6
 const CANDY_FRAME_START = 1;
 const CANDY_FRAME_END = 5;
-const LOGO_X = 13;
-const LOGO_Y = 13; 
+const LOGO_X = 16;
+const LOGO_Y = 25; 
 
 // LEVELS
 const LEVELS = [
@@ -52,6 +52,8 @@ export default class MainGame extends Phaser.Scene {
   private levelUpSound!: Phaser.Sound.BaseSound;
   private levelUpScreen!: LevelUpScreen;
   private swapCandySound!: Phaser.Sound.BaseSound;
+  private matchSound!: Phaser.Sound.BaseSound;
+  private startLevelSound!: Phaser.Sound.BaseSound;
   private shuffleCandySound!: Phaser.Sound.BaseSound;
   private comboCount = 1;
   private comboTimer!: Phaser.Time.TimerEvent;
@@ -67,6 +69,7 @@ export default class MainGame extends Phaser.Scene {
   private progressBar!: Phaser.GameObjects.Graphics
   private progressFrame!: Phaser.GameObjects.Image
   private progressTimer!: Phaser.Time.TimerEvent
+  private clockTickingSound!: Phaser.Sound.BaseSound;
   private eventObserver: EventObserver;
   private gameState: 'playing' | 'paused' | 'ended' = 'playing';
   private closeButton: CloseButton;
@@ -314,6 +317,7 @@ export default class MainGame extends Phaser.Scene {
 
   private nextLevel() {
     this.currentLevelIndex++;
+    this.clockTickingSound?.stop();
 
     if (this.currentLevelIndex >= LEVELS.length) {
         this.endGame(); // nivel final
@@ -332,30 +336,30 @@ export default class MainGame extends Phaser.Scene {
     this.showLevelUpScreen(newLevel.level, newLevel.goal);
   }
 
-private showLevelUpScreen(level: number, goal: number) {
-  this.levelUpSound.play();
-  this.updateProgressBar(1);
-  this.logoColor.setCrop(0, 0, 0, this.logoColor.height);
+  private showLevelUpScreen(level: number, goal: number) {
+    this.levelUpSound.play();
+    this.updateProgressBar(1);
+    this.logoColor.setCrop(0, 0, 0, this.logoColor.height);
 
-  this.levelUpScreen.once('closed', () => {
-    this.startNextLevel();
-  });
+    this.levelUpScreen.once('closed', () => {
+        this.startNextLevel();
+    });
 
-  this.levelUpScreen.show(level, goal);
-}
+    this.levelUpScreen.show(level, goal);
+  }
 
 
-private async startNextLevel() {
-  await this.refillGrid(); // se asegura que esté lleno y sin matches
+  private async startNextLevel() {
+    await this.refillGrid(); // se asegura que esté lleno y sin matches
 
-  this.progressTimer?.destroy();
-  this.progressTimer = this.time.addEvent({
-    delay: this.totalTime * 1000,
-    callback: () => this.endGame(),
-  });
+    this.progressTimer?.destroy();
+    this.progressTimer = this.time.addEvent({
+        delay: this.totalTime * 1000,
+        callback: () => this.endGame(),
+    });
 
-  this.gameState = 'playing';
-}
+    this.gameState = 'playing';
+  }
 
 
   private endGame() {
@@ -364,6 +368,7 @@ private async startNextLevel() {
     this.movingCandiesInProcess = false
 
     this.progressTimer?.remove(false);
+    this.clockTickingSound?.stop();
 
     if (this.scoreValue >= this.scoreGoal) {
         this.winnerScreen.show(prompt.win, "winner_screen");
@@ -376,6 +381,7 @@ private async startNextLevel() {
   }
 
   private removeMatches(matches: Phaser.GameObjects.Sprite[]) {
+    this.matchSound.play()
     //console.log("matches: ", matches);
     console.log("removematches");
 
@@ -427,7 +433,7 @@ private async startNextLevel() {
             duration: 200,  
             ease: 'Back.easeIn', 
              onComplete: () => {
-                //this.SparkleEffect(candy.x, candy.y);  Efecto sparkle
+                //this.SparkleEffect(candy.x, candy.y); 
                 candy.destroy();
             }
         });
@@ -440,8 +446,8 @@ private async startNextLevel() {
     const emitter = this.add.particles(x, y, 'sparkle', {
         speed: { min: 60, max: 120 },
         angle: { min: 0, max: 360 },
-        scale: { start: 0.3, end: 0 },
-        alpha: { start: 1, end: 0 },
+        scale: { start: 0.4, end: 0 },
+        alpha: { start: 1, end: 0.2 },
         lifespan: 250,
         quantity: 5,
         gravityY: 0,
@@ -731,8 +737,8 @@ private async startNextLevel() {
 
   private async playIntroAnimation(): Promise<void> {
     return new Promise((resolve) => {
-        // 1. UI y elementos iniciales
-        const scoreImage = this.add.image(20, 16, 'score').setOrigin(0, 0);
+        // UI y elementos iniciales
+        const scoreImage = this.add.image(10, 16, 'score').setOrigin(0, 0);
         const scoreWidth = scoreImage.width;
         const scoreHeight = scoreImage.height;
 
@@ -749,45 +755,46 @@ private async startNextLevel() {
         }, this);
 
         Footer.create(this);
+        this.startLevelSound.play()
         this.showIntroText();
 
         // Efectos del logo
         this.time.delayedCall(1600, () => {
-        this.spawnFallingCandies(35);
-        this.powerDowmSound.play();
-        this.electricSparksSound.play();
+            this.spawnFallingCandies(35);
+            this.powerDowmSound.play();
+            this.electricSparksSound.play();
 
-        const lightning = this.add.particles(0, 0, 'ray_effect', {
-            x: { min: LOGO_X - 10, max: LOGO_X + this.logoColor.displayWidth + 10 },
-            y: { min: LOGO_Y - 10, max: LOGO_Y + this.logoColor.displayHeight + 10 },
-            lifespan: 600,
-            speed: 0,
-            quantity: 5,
-            scale: { start: 0.1, end: 0 },
-            angle: { min: 0, max: 360 },
-            alpha: { start: 0.4, end: 0 },
-            rotate: { min: 0, max: 360 },
-            gravityY: 0,
-            blendMode: 'ADD'
-        });
+            const lightning = this.add.particles(0, 0, 'ray_effect', {
+                x: { min: LOGO_X - 10, max: LOGO_X + this.logoColor.displayWidth + 10 },
+                y: { min: LOGO_Y - 10, max: LOGO_Y + this.logoColor.displayHeight + 10 },
+                lifespan: 600,
+                speed: 0,
+                quantity: 2,
+                scale: { start: 0.1, end: 0 },
+                angle: { min: 0, max: 360 },
+                alpha: { start: 0.3, end: 0 },
+                rotate: { min: 0, max: 360 },
+                gravityY: 0,
+                blendMode: 'ADD'
+            });
 
-        lightning.setDepth(29);
+            lightning.setDepth(29);
 
-        this.time.delayedCall(2000, () => {
-            lightning.stop();
-        });
+            this.time.delayedCall(2000, () => {
+                lightning.stop();
+            });
 
-        this.tweens.addCounter({
-            from: 1,
-            to: 0,
-            duration: 2300,
-            onUpdate: (tween) => {
-            const value = tween.getValue();
-            const width = this.logoColor.width * value;
-            this.logoColor.setCrop(0, 0, width, this.logoColor.height);
-            },
-            onComplete: () => resolve()
-        });
+            this.tweens.addCounter({
+                from: 1,
+                to: 0,
+                duration: 2700,
+                onUpdate: (tween) => {
+                const value = tween.getValue();
+                const width = this.logoColor.width * value;
+                this.logoColor.setCrop(0, 0, width, this.logoColor.height);
+                },
+                onComplete: () => resolve()
+            });
         });
     });
   }
@@ -833,43 +840,43 @@ private async startNextLevel() {
   }
 
 
-private async createGridWithoutMatches() {
-  this.offsetX = (this.scale.width - (GRID_WIDTH * CANDY_WIDTH + (GRID_WIDTH - 1) * GAP)) / 2;
-  const gridHeight = GRID_HEIGHT * CANDY_HEIGHT + (GRID_HEIGHT - 1) * GAP;
-  this.offsetY = (this.scale.height - gridHeight) / 2;
+  private async createGridWithoutMatches() {
+    this.offsetX = (this.scale.width - (GRID_WIDTH * CANDY_WIDTH + (GRID_WIDTH - 1) * GAP)) / 2;
+    const gridHeight = GRID_HEIGHT * CANDY_HEIGHT + (GRID_HEIGHT - 1) * GAP;
+    this.offsetY = (this.scale.height - gridHeight) / 2;
 
-  for (let row = GRID_HEIGHT - 1; row >= 0; row--) {
-    this.grid[row] = [];
-    for (let col = 0; col < GRID_WIDTH; col++) {
-      let candyType;
-      do {
-        candyType = Phaser.Math.Between(CANDY_FRAME_START, CANDY_FRAME_END);
-      } while (
-        (col >= 2 &&
-          this.grid[row][col - 1]?.getData('type') === candyType &&
-          this.grid[row][col - 2]?.getData('type') === candyType) ||
-        (row <= GRID_HEIGHT - 3 &&
-          this.grid[row + 1]?.[col]?.getData('type') === candyType &&
-          this.grid[row + 2]?.[col]?.getData('type') === candyType)
-      );
+    for (let row = GRID_HEIGHT - 1; row >= 0; row--) {
+        this.grid[row] = [];
+        for (let col = 0; col < GRID_WIDTH; col++) {
+        let candyType;
+        do {
+            candyType = Phaser.Math.Between(CANDY_FRAME_START, CANDY_FRAME_END);
+        } while (
+            (col >= 2 &&
+            this.grid[row][col - 1]?.getData('type') === candyType &&
+            this.grid[row][col - 2]?.getData('type') === candyType) ||
+            (row <= GRID_HEIGHT - 3 &&
+            this.grid[row + 1]?.[col]?.getData('type') === candyType &&
+            this.grid[row + 2]?.[col]?.getData('type') === candyType)
+        );
 
-      const { x, y } = this.getCandyPosition(row, col);
-      const candy = this.createCandy(x, y, candyType, row, col);
-      candy.setAlpha(0);
+        const { x, y } = this.getCandyPosition(row, col);
+        const candy = this.createCandy(x, y, candyType, row, col);
+        candy.setAlpha(0);
 
-      this.grid[row][col] = candy;
+        this.grid[row][col] = candy;
 
-      this.tweens.add({
-        targets: candy,
-        alpha: 1,
-        duration: 300,
-        delay: (GRID_HEIGHT - row + col) * 40
-      });
+        this.tweens.add({
+            targets: candy,
+            alpha: 1,
+            duration: 300,
+            delay: (GRID_HEIGHT - row + col) * 40
+        });
+        }
     }
-  }
 
-  return this.delay(900); // Esperar a que termine la animación
-}
+    return this.delay(900); // Esperar a que termine la animación
+  }
 
 
   init(data: { levelIndex: number; score: number }) {
@@ -892,14 +899,17 @@ private async createGridWithoutMatches() {
     this.levelUpScreen = new LevelUpScreen(this);
     this.levelUpSound = this.sound.add("level_up", { volume: 0.6, loop: false, });
     this.swapCandySound = this.sound.add("swap_candy");
+    this.matchSound = this.sound.add("match_sound");
     this.shuffleCandySound = this.sound.add("shuffle_candies");
-    this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_white').setScale(0.3).setOrigin(0,0).setDepth(30);
-    this.logoColor = this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_color').setScale(0.3).setOrigin(0,0).setDepth(31).setCrop(0, 0, 0, 60);
+    this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_white').setScale(0.23).setOrigin(0,0).setDepth(30);
+    this.logoColor = this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_color').setScale(0.23).setOrigin(0,0).setDepth(31).setCrop(0, 0, 0, 60);
     this.powerDowmSound = this.sound.add("power_down_sound");
     this.electricSparksSound = this.sound.add("electric_sparks_sound");
     this.comboSound = this.sound.add("combo_sound");
     this.comboX5Sound = this.sound.add("combo_x5_sound");
+    this.clockTickingSound = this.sound.add("clock_ticking_sound", { loop: false });
     this.earthRocksSound = this.sound.add("earth_rocks_sound");
+    this.startLevelSound = this.sound.add("start_level_sound");
     this.comboText = this.add.text(this.cameras.main.centerX, this.scale.height / 2, '', {
         font: '48px montserrat-memo',
         color: '#FFD700',
@@ -927,9 +937,15 @@ private async createGridWithoutMatches() {
     })
 
     this.events.on('update', () => {
-      const progress = Phaser.Math.Clamp(1 - this.progressTimer.getElapsed() / this.progressTimer.delay, 0, 1)
-      this.updateProgressBar(progress)
-    })
+        const elapsed = this.progressTimer.getElapsed();
+        const remaining = Math.ceil((this.progressTimer.delay - elapsed) / 1000);
+        const progress = Phaser.Math.Clamp(1 - elapsed / this.progressTimer.delay, 0, 1);
+        this.updateProgressBar(progress);
+
+        if (remaining === 4 && !this.clockTickingSound.isPlaying) {
+            this.clockTickingSound.play();
+        }
+    });
 
     this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
         if (!this.selectedCandy) return;
