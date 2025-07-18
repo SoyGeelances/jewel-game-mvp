@@ -85,6 +85,7 @@ export default class Preloader extends Phaser.Scene {
         this.load.audio("clock_ticking_sound", "clock_ticking_sound.mp3")
         this.load.audio("earth_rocks_sound", "earth_rocks_sound.mp3")
         this.load.audio("start_level_sound", "start_level_sound.mp3")
+        this.load.audio('candy_music_background_sound', 'candy_music_background_sound.mp3');
 
 		// You should remove this logic; this is only included here to show off the progress bar.
 

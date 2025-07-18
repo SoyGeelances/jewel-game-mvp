@@ -6,6 +6,8 @@ import { EventObserver } from '../observer';
 import { CloseButton } from "../components";
 import { Footer } from "../components/Footer";
 import { LevelUpScreen } from "../components/LevelUpScreen";
+import { BackgroundMusic } from '../components/BackgroundMusic';
+
 
 // GRID
 const GRID_WIDTH = 5
@@ -24,6 +26,10 @@ const LEVELS = [
   { level: 2, goal: 1300, time: 35 },
   { level: 3, goal: 2500, time: 36 },
   { level: 4, goal: 3800, time: 41 },
+  { level: 5, goal: 5200, time: 46 },
+  { level: 6, goal: 6700, time: 47 },
+  { level: 7, goal: 8100, time: 48 },
+  { level: 8, goal: 10000, time: 49 }
 ];
 
 
@@ -70,6 +76,9 @@ export default class MainGame extends Phaser.Scene {
   private eventObserver: EventObserver;
   private gameState: 'playing' | 'paused' | 'ended' = 'playing';
   private closeButton: CloseButton;
+  private bgMusic!: BackgroundMusic;
+  private soundButton!: Phaser.GameObjects.Image;
+
 
   preload() {
     this.load.image('progress-frame', 'assets/progress_bar_frame.png')
@@ -368,6 +377,7 @@ export default class MainGame extends Phaser.Scene {
     this.closeButton?.destroy?.();
     this.progressTimer?.remove(false);
     this.clockTickingSound?.stop();
+    this.bgMusic?.stop();
 
     if (this.scoreValue >= this.scoreGoal) {
         this.winnerScreen.show(prompt.win, "winner_screen");
@@ -614,6 +624,7 @@ export default class MainGame extends Phaser.Scene {
         // Verificamos derecha
         if (col < GRID_WIDTH - 1) {
             const right = this.grid[row][col + 1]
+            if (!right) continue;
             if (right.getData('type') !== currentType) {
             this.swapData(current, right)
             const matches = this.getMatches()
@@ -624,7 +635,8 @@ export default class MainGame extends Phaser.Scene {
 
         // Verificamos abajo
         if (row < GRID_HEIGHT - 1) {
-            const down = this.grid[row + 1][col]
+            const down = this.grid[row + 1][col];
+            if (!down) continue;
             if (down.getData('type') !== currentType) {
             this.swapData(current, down)
             const matches = this.getMatches()
@@ -748,6 +760,17 @@ export default class MainGame extends Phaser.Scene {
         fontStyle: 'bold',
         }).setOrigin(1, 0.5);
 
+        // Botón de sonido
+        this.soundButton = this.add.image(this.scale.width - 15, 68, 'sound_on')
+        .setOrigin(1, 0)
+        .setScale(1)
+        .setInteractive({ useHandCursor: true });
+
+        this.soundButton.on('pointerdown', () => {
+            const isMuted = this.bgMusic.toggleMute(); // retorna true si está en mute
+            this.soundButton.setTexture(isMuted ? 'sound_off' : 'sound_on');
+        });
+
         this.closeButton.create();
         this.eventObserver.on('button-clicked', (buttonId) => {
         ButtonEventHandler.handleButtonEvents(buttonId, this);
@@ -798,42 +821,42 @@ export default class MainGame extends Phaser.Scene {
     });
   }
 
-private showIntroText() {
-  const centerX = this.cameras.main.centerX;
-  const centerY = this.scale.height / 2;
+  private showIntroText() {
+    const centerX = this.cameras.main.centerX;
+    const centerY = this.scale.height / 2;
 
-  const targetX = LOGO_X + this.logoColor.displayWidth / 2;
-  const targetY = LOGO_Y + this.logoColor.displayHeight / 2;
+    const targetX = LOGO_X + this.logoColor.displayWidth / 2;
+    const targetY = LOGO_Y + this.logoColor.displayHeight / 2;
 
-  this.recargaMasti = this.add.image(centerX, centerY, 'recarga_masti')
-    .setScale(0.4)
-    .setAlpha(0)
-    .setDepth(999);
+    this.recargaMasti = this.add.image(centerX, centerY, 'recarga_masti')
+        .setScale(0.4)
+        .setAlpha(0)
+        .setDepth(999);
 
-  // Fade in inicial
-  this.tweens.add({
-    targets: this.recargaMasti,
-    scale: { from: 0.6, to: 0.4 },
-    alpha: 1,
-    duration: 500,
-    ease: 'Back.Out',
-    onComplete: () => {
-      // Luego de un pequeño delay, animar hacia el logo
-      this.time.delayedCall(700, () => {
-        this.tweens.add({
-          targets: this.recargaMasti,
-          x: targetX,
-          y: targetY,
-          scale: 0.15,
-          alpha: 0,
-          duration: 1800,
-          ease: 'Cubic.easeInOut',
-          onComplete: () => this.recargaMasti.destroy()
+    // Fade in inicial
+    this.tweens.add({
+        targets: this.recargaMasti,
+        scale: { from: 0.6, to: 0.4 },
+        alpha: 1,
+        duration: 500,
+        ease: 'Back.Out',
+        onComplete: () => {
+        // Luego de un pequeño delay, animar hacia el logo
+        this.time.delayedCall(700, () => {
+            this.tweens.add({
+            targets: this.recargaMasti,
+            x: targetX,
+            y: targetY,
+            scale: 0.15,
+            alpha: 0,
+            duration: 1800,
+            ease: 'Cubic.easeInOut',
+            onComplete: () => this.recargaMasti.destroy()
+            });
         });
-      });
-    }
-  });
-}
+        }
+    });
+  }
 
 
   private spawnFallingCandies(amount: number) {
@@ -917,6 +940,7 @@ private showIntroText() {
     this.winnerScreen = new WinnerScreen(this)
     this.eventObserver = EventObserver.getInstance();
     this.levelUpScreen = new LevelUpScreen(this);
+    this.bgMusic = new BackgroundMusic(this, 'candy_music_background_sound', 0.23);
     this.levelUpSound = this.sound.add("level_up", { volume: 0.6, loop: false, });
     this.swapCandySound = this.sound.add("swap_candy");
     this.matchSound = this.sound.add("match_sound");
@@ -935,12 +959,12 @@ private showIntroText() {
         color: '#FFD700',
         fontStyle: 'bold'
     }).setOrigin(0.5).setAlpha(0).setDepth(999);
-
     document.addEventListener('mouseup', this.handleGlobalMouseUp); //Detectar movimiento fuera del canvas
 
     await this.playIntroAnimation(); 
     await this.delay(400);
     await this.createGridWithoutMatches();
+    this.bgMusic.play(); 
 
     this.progressFrame = this.add.image(this.cameras.main.centerX, this.scale.height - 68, 'progress-frame').setOrigin(0.5)
     this.progressBar = this.add.graphics()
