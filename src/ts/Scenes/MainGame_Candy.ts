@@ -22,6 +22,8 @@ const LOGO_Y = 25;
 const LEVELS = [
   { level: 1, goal: 600, time: 30 },
   { level: 2, goal: 1300, time: 35 },
+  { level: 3, goal: 2500, time: 36 },
+  { level: 4, goal: 3800, time: 41 },
 ];
 
 
@@ -766,7 +768,7 @@ export default class MainGame extends Phaser.Scene {
                 y: { min: LOGO_Y - 10, max: LOGO_Y + this.logoColor.displayHeight + 10 },
                 lifespan: 600,
                 speed: 0,
-                quantity: 2,
+                quantity: 1,
                 scale: { start: 0.15, end: 0 },
                 angle: { min: 0, max: 360 },
                 alpha: { start: 0.3, end: 0 },
@@ -775,7 +777,7 @@ export default class MainGame extends Phaser.Scene {
                 blendMode: 'ADD'
             });
 
-            lightning.setDepth(29);
+            lightning.setDepth(0);
 
             this.time.delayedCall(2000, () => {
                 lightning.stop();
