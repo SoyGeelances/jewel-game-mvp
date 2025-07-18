@@ -13,25 +13,25 @@ export class LevelUpScreen extends Phaser.Events.EventEmitter {
     const centerY = this.scene.scale.height / 2;
 
     const emitter = this.scene.add.particles(0, 0, 'spritesheet_confetti', {
-        frame: Phaser.Utils.Array.NumberArray(0, 6),
-        speed: { min: 80, max: 160 },
-        angle: { min: -110, max: -70 },
-        gravityY: 80,
-        scale: { start: 0.6, end: 0, ease: 'sine.out' },
-        lifespan: { min: 3000, max: 7500 },
-        quantity: 40,
-        rotate: { min: 0, max: 360 },
-        alpha: { start: 1, end: 0 },
-        frequency: -1
+        frame: Phaser.Utils.Array.NumberArray(0, 23),
+        speed: { min: 50, max: 130 },         
+        angle: { min: 0, max: 300 },        
+        gravityY: 60,                        
+        scale: { start: 0.25, end: 0 },
+        lifespan: 7000,                       
+        rotate: { min: -120, max: 120 },
+        alpha: { start: 1, end: 0.2 },
+        quantity: 30,
+        frequency: -1,
+        emitZone: {
+            type: 'random',
+            source: new Phaser.Geom.Circle(centerX, centerY, 60) // círculo completo
+        }
     });
 
     this.container.addAt(emitter, 1); //posicionamiento en las capas
 
-    emitter.explode(100, centerX, centerY);
-
-    this.scene.time.delayedCall(500, () => {
-        emitter.explode(80, centerX, centerY);
-    });
+    emitter.explode(170); // Densidad
 
     this.scene.time.delayedCall(8000, () => {
         emitter.destroy();

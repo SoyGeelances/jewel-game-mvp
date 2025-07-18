@@ -14,7 +14,7 @@ const CANDY_WIDTH = 116 * 0.6;
 const CANDY_HEIGHT = 116 * 0.6;
 const GAP = 6
 const CANDY_FRAME_START = 1;
-const CANDY_FRAME_END = 5;
+const CANDY_FRAME_END = 4;
 const LOGO_X = 16;
 const LOGO_Y = 25; 
 
@@ -22,12 +22,6 @@ const LOGO_Y = 25;
 const LEVELS = [
   { level: 1, goal: 600, time: 30 },
   { level: 2, goal: 1300, time: 35 },
-  { level: 3, goal: 2500, time: 36 },
-  { level: 4, goal: 3800, time: 41 },
-  { level: 5, goal: 5200, time: 46 },
-  { level: 6, goal: 6700, time: 49 },
-  { level: 7, goal: 8100, time: 53 },
-  { level: 8, goal: 10000, time: 55 }
 ];
 
 
@@ -65,6 +59,7 @@ export default class MainGame extends Phaser.Scene {
   private electricSparksSound!: Phaser.Sound.BaseSound;
   private powerDowmSound!: Phaser.Sound.BaseSound;
   private logoColor!: Phaser.GameObjects.Image;
+  private logoWhite!: Phaser.GameObjects.Image;
   private recargaMasti!: Phaser.GameObjects.Image;
   private progressBar!: Phaser.GameObjects.Graphics
   private progressFrame!: Phaser.GameObjects.Image
@@ -366,7 +361,9 @@ export default class MainGame extends Phaser.Scene {
     if (this.gameState === 'ended') return; 
     this.gameState = 'ended';
     this.movingCandiesInProcess = false
-
+    this.logoWhite?.destroy?.()
+    this.logoColor?.destroy?.()
+    this.closeButton?.destroy?.();
     this.progressTimer?.remove(false);
     this.clockTickingSound?.stop();
 
@@ -770,7 +767,7 @@ export default class MainGame extends Phaser.Scene {
                 lifespan: 600,
                 speed: 0,
                 quantity: 2,
-                scale: { start: 0.1, end: 0 },
+                scale: { start: 0.15, end: 0 },
                 angle: { min: 0, max: 360 },
                 alpha: { start: 0.3, end: 0 },
                 rotate: { min: 0, max: 360 },
@@ -799,21 +796,42 @@ export default class MainGame extends Phaser.Scene {
     });
   }
 
-  private showIntroText() {
-    this.recargaMasti = this.add.image(this.cameras.main.centerX, this.scale.height / 2, 'recarga_masti').setScale(0.3).setAlpha(0).setDepth(999);
+private showIntroText() {
+  const centerX = this.cameras.main.centerX;
+  const centerY = this.scale.height / 2;
 
-    this.tweens.add({
-        targets: this.recargaMasti,
-        alpha: 0.8,
-        scale: { from: 0.6, to: 0.4 },
-        y: this.scale.height / 2 - 10,
-        duration: 1050,
-        ease: 'Back.Out',
-        yoyo: true,
-        hold: 900,
-        onComplete: () => this.recargaMasti.destroy()
-    });
-  }
+  const targetX = LOGO_X + this.logoColor.displayWidth / 2;
+  const targetY = LOGO_Y + this.logoColor.displayHeight / 2;
+
+  this.recargaMasti = this.add.image(centerX, centerY, 'recarga_masti')
+    .setScale(0.4)
+    .setAlpha(0)
+    .setDepth(999);
+
+  // Fade in inicial
+  this.tweens.add({
+    targets: this.recargaMasti,
+    scale: { from: 0.6, to: 0.4 },
+    alpha: 1,
+    duration: 500,
+    ease: 'Back.Out',
+    onComplete: () => {
+      // Luego de un pequeño delay, animar hacia el logo
+      this.time.delayedCall(700, () => {
+        this.tweens.add({
+          targets: this.recargaMasti,
+          x: targetX,
+          y: targetY,
+          scale: 0.15,
+          alpha: 0,
+          duration: 1800,
+          ease: 'Cubic.easeInOut',
+          onComplete: () => this.recargaMasti.destroy()
+        });
+      });
+    }
+  });
+}
 
 
   private spawnFallingCandies(amount: number) {
@@ -901,8 +919,8 @@ export default class MainGame extends Phaser.Scene {
     this.swapCandySound = this.sound.add("swap_candy");
     this.matchSound = this.sound.add("match_sound");
     this.shuffleCandySound = this.sound.add("shuffle_candies");
-    this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_white').setScale(0.23).setOrigin(0,0).setDepth(30);
-    this.logoColor = this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_color').setScale(0.23).setOrigin(0,0).setDepth(31).setCrop(0, 0, 0, 60);
+    this.logoWhite = this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_white').setScale(0.23).setOrigin(0,0).setDepth(1);
+    this.logoColor = this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_color').setScale(0.23).setOrigin(0,0).setDepth(2).setCrop(0, 0, 0, 60);
     this.powerDowmSound = this.sound.add("power_down_sound");
     this.electricSparksSound = this.sound.add("electric_sparks_sound");
     this.comboSound = this.sound.add("combo_sound");
@@ -942,7 +960,7 @@ export default class MainGame extends Phaser.Scene {
         const progress = Phaser.Math.Clamp(1 - elapsed / this.progressTimer.delay, 0, 1);
         this.updateProgressBar(progress);
 
-        if (remaining === 4 && !this.clockTickingSound.isPlaying) {
+        if (remaining === 10 && !this.clockTickingSound.isPlaying) {
             this.clockTickingSound.play();
         }
     });

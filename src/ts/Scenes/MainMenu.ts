@@ -89,22 +89,32 @@ export default class MainMenu extends Phaser.Scene {
 			ease: "Bounce.easeOut"
 		});
 
-        const candie1 = this.add.image(this.cameras.main.centerX, (this.cameras.main.centerY * 0.6) + 40, "candies_logo", 7).setOrigin(0.5).setScale(0).setDepth(1);
-		const candie2 = this.add.image(this.cameras.main.centerX, (this.cameras.main.centerY * 0.6) + 40, "candies_logo", 2).setOrigin(0.5).setScale(0).setDepth(2);
-		const candie3 = this.add.image(this.cameras.main.centerX, (this.cameras.main.centerY * 0.6) + 40, "candies_logo", 4).setOrigin(0.5).setScale(0).setDepth(0);
-        const candie4 = this.add.image(this.cameras.main.centerX, (this.cameras.main.centerY * 0.6) + 40, "candies_logo", 5).setOrigin(0.5).setScale(0).setDepth(0);
-		const candie5 = this.add.image(this.cameras.main.centerX, (this.cameras.main.centerY * 0.6) + 40, "candies_logo", 3).setOrigin(0.5).setScale(0).setDepth(2);
-		const candie6 = this.add.image(this.cameras.main.centerX, (this.cameras.main.centerY * 0.6) + 40, "candies_logo", 8).setOrigin(0.5).setScale(0).setDepth(1);
+        const logo = this.add.image(this.cameras.main.centerX, this.cameras.main.centerY * 0.5, "logo_candy_Arcor").setScale(0).setDepth(3);
+        this.tweens.add({
+			targets: logo,
+			scale: 1.05,
+			delay:0,
+			duration: 600,
+			ease: "Bounce.easeOut"
+		});
+		logo.setOrigin(0.5, 0);
+
+        const candie1 = this.add.image(this.cameras.main.centerX, logo.y + (logo.height * 1.05) + 10, "candies_logo", 0).setOrigin(0.5).setScale(0).setDepth(5);
+		const candie2 = this.add.image(this.cameras.main.centerX, logo.y + (logo.height * 1.05) + 10 + 40, "candies_logo", 3).setOrigin(0.5).setScale(0).setDepth(6);
+		const candie3 = this.add.image(this.cameras.main.centerX, logo.y + (logo.height * 1.05) + 10 + 40, "candies_logo", 2).setOrigin(0.5).setScale(0).setDepth(5);
+        const candie4 = this.add.image(this.cameras.main.centerX, logo.y + (logo.height * 1.05) + 10 + 40, "candies_logo", 7).setOrigin(0.5).setScale(0).setDepth(4);
+		//const candie5 = this.add.image(this.cameras.main.centerX, logo.y + (logo.height * 1.05) + 10 + 40, "candies_logo", 3).setOrigin(0.5).setScale(0).setDepth(6);
+		//const candie6 = this.add.image(this.cameras.main.centerX, logo.y + (logo.height * 1.05) + 10 + 40, "candies_logo", 8).setOrigin(0.5).setScale(0).setDepth(5);
 
 		const baseX = candie1.x
 		const baseY = candie1.y
 
 		this.tweens.add({
 			targets: candie1,
-			scale: 1.2,
-			x: baseX - 115,
+			scale: 1,
+			x: baseX - 120,
 			y: baseY - 15,
-			angle: -15,
+			angle: -125,
 			delay:600,
 			duration: 600,
 			ease: "Bounce.easeOut"
@@ -112,9 +122,9 @@ export default class MainMenu extends Phaser.Scene {
 
         this.tweens.add({
 			targets: [candie1],
-			scale: 1.3,
+			scale: 1.1,
 			delay:1300,
-			angle: -20,
+			angle: -130,
 			duration: 300,
 			ease: "Power1",
 			yoyo: true,
@@ -123,10 +133,10 @@ export default class MainMenu extends Phaser.Scene {
 		
 		this.tweens.add({
 			targets: candie2,
-			scale: 0.8,
+			scale: 1,
 			x: baseX - 80,
-			y: baseY - 40,
-			angle: -25,
+			y: baseY - 5,
+			angle: + 15,
 			delay:600,
 			duration: 600,
 			ease: "Bounce.easeOut"
@@ -134,9 +144,9 @@ export default class MainMenu extends Phaser.Scene {
 
         this.tweens.add({
 			targets: [candie2],
-			scale: 0.9,
+			scale: 1.1,
 			delay:1100,
-			angle: -19,
+			angle: + 10,
 			duration: 300,
 			ease: "Power1",
 			yoyo: true,
@@ -145,10 +155,10 @@ export default class MainMenu extends Phaser.Scene {
 
         this.tweens.add({
 			targets: candie3,
-			scale: 0.7,
-			x: baseX - 55,
-			y: baseY - 50,
-			angle: -10,
+			scale: 0.95,
+			x: baseX + 80,
+			y: baseY - 5,
+			angle: + 135,
 			delay:600,
 			duration: 600,
 			ease: "Bounce.easeOut"
@@ -156,9 +166,9 @@ export default class MainMenu extends Phaser.Scene {
 
         this.tweens.add({
 			targets: [candie3],
-			scale: 0.7,
-			delay:1100,
-			angle: -11,
+			scale: 0.9,
+			delay:1080,
+			angle: + 115 ,
 			duration: 300,
 			ease: "Power1",
 			yoyo: true,
@@ -167,10 +177,10 @@ export default class MainMenu extends Phaser.Scene {
 
         this.tweens.add({
 			targets: candie4,
-			scale: 0.7,
-			x: baseX + 50,
-			y: baseY - 50,
-			angle: -10,
+			scale: 1.2,
+			x: baseX + 110,
+			y: baseY - 8,
+			angle: + 130,
 			delay:600,
 			duration: 600,
 			ease: "Bounce.easeOut"
@@ -178,70 +188,16 @@ export default class MainMenu extends Phaser.Scene {
 
         this.tweens.add({
 			targets: [candie4],
-			scale: 0.8,
+			scale: 1.3,
 			delay: 1300,
-			angle: -11,
+			angle: + 120,
 			duration: 300,
 			ease: "Power1",
 			yoyo: true,
 			loop: -1
 		});
 
-        this.tweens.add({
-			targets: candie5,
-			scale: 1,
-			x: baseX + 85,
-			y: baseY - 40,
-			angle: -40,
-			delay:600,
-			duration: 600,
-			ease: "Bounce.easeOut"
-		});
-
-        this.tweens.add({
-			targets: [candie5],
-			scale: 1.1,
-			delay: 1200,
-			angle: -45,
-			duration: 300,
-			ease: "Power1",
-			yoyo: true,
-			loop: -1
-		});
-
-        this.tweens.add({
-			targets: candie6,
-			scale: 1.1,
-			x: baseX + 120,
-			y: baseY - 30,
-			angle: 20,
-			delay:600,
-			duration: 600,
-			ease: "Bounce.easeOut"
-		});
-
-        this.tweens.add({
-			targets: [candie6],
-			scale: 1.1,
-			delay: 900,
-			angle: 25,
-			duration: 300,
-			ease: "Power1",
-			yoyo: true,
-			loop: -1
-		});
-
-        const logo = this.add.image(this.cameras.main.centerX, this.cameras.main.centerY * 0.5, "logo_candy_Arcor").setScale(0).setDepth(6);
-        this.tweens.add({
-			targets: logo,
-			scale: 1.1,
-			delay:0,
-			duration: 600,
-			ease: "Bounce.easeOut"
-		});
-		logo.setOrigin(0.5, 0);
-
-        const playButton = this.add.image(this.cameras.main.centerX, this.cameras.main.centerY * 1.2, "play").setScale(0).setDepth(7);
+        const playButton = this.add.image(this.cameras.main.centerX, this.cameras.main.centerY * 1.3, "play").setScale(0).setDepth(7);
         this.tweens.add({
 			targets: playButton,
 			scale: 1,
