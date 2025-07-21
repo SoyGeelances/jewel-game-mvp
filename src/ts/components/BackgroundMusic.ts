@@ -1,65 +1,51 @@
 import Phaser from 'phaser';
 
+// components/BackgroundMusic.ts
 export class BackgroundMusic {
-  private scene: Phaser.Scene;
-  private music!: Phaser.Sound.WebAudioSound;
-  private key: string;
-  private muted: boolean = false;
+  private static instance: BackgroundMusic;
+  private sound: Phaser.Sound.BaseSound | null = null;
+  private isMuted: boolean = false;
 
-  constructor(scene: Phaser.Scene, key: string, volume: number = 0.2) {
-    this.scene = scene;
-    this.key = key;
+  private constructor() {}
 
-    this.music = this.scene.sound.add(this.key, {
-      loop: true,
-      volume: volume
-    }) as Phaser.Sound.WebAudioSound;
+  public static getInstance(): BackgroundMusic {
+    if (!BackgroundMusic.instance) {
+      BackgroundMusic.instance = new BackgroundMusic();
+    }
+    return BackgroundMusic.instance;
   }
 
-public play() {
-  this.music.play();
+  public init(scene: Phaser.Scene, key: string, volume: number = 0.13) {
+    if (!this.sound) {
+      this.sound = scene.sound.add(key, {
+        loop: true,
+        volume: volume
+      });
+      this.sound.play();
+    }
+  }
+
+public toggleMute(): boolean {
+  if (!this.sound) return this.isMuted;
+
+  this.isMuted = !this.isMuted;
+  (this.sound as Phaser.Sound.WebAudioSound).setMute(this.isMuted);
+  return this.isMuted;
 }
 
-
-  public stop() {
-    if (this.music && this.music.isPlaying) {
-      this.music.stop();
+  public stop(): void {
+    if (this.sound) {
+      this.sound.stop();
+      this.sound.destroy();
+      this.sound = null;
     }
   }
 
-  public pause() {
-    if (this.music && this.music.isPlaying) {
-      this.music.pause();
-    }
+  public isPlaying(): boolean {
+    return this.sound?.isPlaying ?? false;
   }
 
-  public resume() {
-    if (this.music && this.music.isPaused) {
-      this.music.resume();
-    }
-  }
-
-  public setVolume(value: number) {
-    this.music.setVolume(value);
-  }
-
-  public mute() {
-    this.music.setMute(true);
-    this.muted = true;
-  }
-
-  public unmute() {
-    this.music.setMute(false);
-    this.muted = false;
-  }
-
-  public toggleMute(): boolean {
-    this.muted = !this.muted;
-    this.music.setMute(this.muted);
-    return this.muted;
-  }
-
-  public isMuted(): boolean {
-    return this.muted;
+  public isMutedState(): boolean {
+    return this.isMuted;
   }
 }

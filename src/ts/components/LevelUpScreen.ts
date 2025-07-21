@@ -52,21 +52,21 @@ export class LevelUpScreen extends Phaser.Events.EventEmitter {
 
     // Título
     this.titleText = this.scene.add.text(centerX, centerY - 40, '', {
-      font: '32px montserrat-memo',
+      font: "32px 'Luckiest Guy'",
       color: '#FFFFFF',
       align: 'center'
     }).setOrigin(0.5);
 
     // Meta
     this.goalText = this.scene.add.text(centerX, centerY + 20, '', {
-      font: '26px montserrat-memo',
+      font: "26px 'Luckiest Guy'",
       color: '#FEC647',
       align: 'center'
     }).setOrigin(0.5);
 
     // Botón continuar
     this.continueButton = this.scene.add.text(centerX, centerY + 90, 'Continuar', {
-      font: '26px montserrat-memo',
+      font: "26px 'Luckiest Guy'",
       color: '#FFFFFF',
       backgroundColor: '#002E55',
       padding: { left: 20, right: 20, top: 10, bottom: 10 },

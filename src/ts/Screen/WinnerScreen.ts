@@ -81,7 +81,7 @@ export class WinnerScreen  {
       this.scene.cameras.main.centerY + 125,
       this.scene.game.getCouponCode(),
       {
-          font: "20px montserrat-memo",
+          font: "20px 'Luckiest Guy'",
           color: "#FFFFFF",
       }
     )
@@ -123,7 +123,7 @@ export class WinnerScreen  {
       this.scene.cameras.main.centerY - 15,
       this.scene.getScoreValue(),
       {
-          font: "40px montserrat-memo",
+          font: "40px 'Luckiest Guy'",
           color: "#E2D64B",
       }
     )

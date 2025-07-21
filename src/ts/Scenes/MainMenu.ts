@@ -5,6 +5,7 @@ import { RetryScreen } from '../Screen';
 import { EventObserver } from "../observer";
 import { ButtonEventHandler } from "../handlers";
 import { Footer } from "../components/Footer";
+import { BackgroundMusic } from "../components/BackgroundMusic";
 
 export default class MainMenu extends Phaser.Scene {
 	music: Phaser.Sound.BaseSound;
@@ -23,14 +24,14 @@ export default class MainMenu extends Phaser.Scene {
 		this.eventObserver = EventObserver.getInstance();
 
 		// this.game.config.audio.disableWebAudio = true;
-		this.game.config.audio.disableWebAudio = false;
+		//this.game.config.audio.disableWebAudio = false;
 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		//@ts-ignore
-		this.game.soundManager = Phaser.Sound.SoundManagerCreator.create(this.game)
+		//this.game.soundManager = Phaser.Sound.SoundManagerCreator.create(this.game)
 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		//@ts-ignore
-		this.music = this.game.soundManager;
-		this.game.sound.mute = false;
+		//this.music = this.game.soundManager;
+		//this.game.sound.mute = false;
 
 	}
 
@@ -48,6 +49,10 @@ export default class MainMenu extends Phaser.Scene {
 
 	public create(): void {
 		Utilities.LogSceneMethodEntry("MainMenu", "create");
+        const bgMusic = BackgroundMusic.getInstance();
+        if (!bgMusic.isPlaying()) {
+            bgMusic.init(this, 'candy_music_background_sound', 0.13);
+        }
 
 		if(!this.alreadyPlayignMusic) {
 			this.alreadyPlayignMusic = true;

@@ -24,12 +24,6 @@ const LOGO_Y = 25;
 const LEVELS = [
   { level: 1, goal: 600, time: 30 },
   { level: 2, goal: 1300, time: 35 },
-  { level: 3, goal: 2500, time: 36 },
-  { level: 4, goal: 3800, time: 41 },
-  { level: 5, goal: 5200, time: 46 },
-  { level: 6, goal: 6700, time: 47 },
-  { level: 7, goal: 8100, time: 48 },
-  { level: 8, goal: 10000, time: 49 }
 ];
 
 
@@ -499,7 +493,7 @@ export default class MainGame extends Phaser.Scene {
         targets: this.comboText,
         y: this.scale.height / 2 - 80,
         alpha: 0,
-        duration: 800,
+        duration: 900,
         ease: 'Cubic.easeOut'
     });
   }
@@ -717,7 +711,7 @@ export default class MainGame extends Phaser.Scene {
         {
         fontSize: '20px',
         color: '#ffffff',
-        fontFamily: 'montserrat-memo',
+        fontFamily: 'Luckiest Guy',
         }
     ).setOrigin(0.5).setDepth(11)
 
@@ -754,7 +748,7 @@ export default class MainGame extends Phaser.Scene {
         const scoreHeight = scoreImage.height;
 
         this.scoreText = this.add.text(20 + scoreWidth - 30, 17 + scoreHeight / 2, '0', {
-        fontFamily: 'montserrat-memo',
+        fontFamily: 'Luckiest Guy',
         fontSize: '40px',
         color: '#FEC647',
         fontStyle: 'bold',
@@ -767,7 +761,7 @@ export default class MainGame extends Phaser.Scene {
         .setInteractive({ useHandCursor: true });
 
         this.soundButton.on('pointerdown', () => {
-            const isMuted = this.bgMusic.toggleMute(); // retorna true si está en mute
+            const isMuted = BackgroundMusic.getInstance().toggleMute();
             this.soundButton.setTexture(isMuted ? 'sound_off' : 'sound_on');
         });
 
@@ -829,16 +823,16 @@ export default class MainGame extends Phaser.Scene {
     const targetY = LOGO_Y + this.logoColor.displayHeight / 2;
 
     this.recargaMasti = this.add.image(centerX, centerY, 'recarga_masti')
-        .setScale(0.4)
+        .setScale(1)
         .setAlpha(0)
         .setDepth(999);
 
     // Fade in inicial
     this.tweens.add({
         targets: this.recargaMasti,
-        scale: { from: 0.6, to: 0.4 },
-        alpha: 1,
-        duration: 500,
+        scale: { from: 1, to: 0.65 },
+        alpha: 0.9,
+        duration: 700,
         ease: 'Back.Out',
         onComplete: () => {
         // Luego de un pequeño delay, animar hacia el logo
@@ -849,7 +843,7 @@ export default class MainGame extends Phaser.Scene {
             y: targetY,
             scale: 0.15,
             alpha: 0,
-            duration: 1800,
+            duration: 2000,
             ease: 'Cubic.easeInOut',
             onComplete: () => this.recargaMasti.destroy()
             });
@@ -940,7 +934,10 @@ export default class MainGame extends Phaser.Scene {
     this.winnerScreen = new WinnerScreen(this)
     this.eventObserver = EventObserver.getInstance();
     this.levelUpScreen = new LevelUpScreen(this);
-    this.bgMusic = new BackgroundMusic(this, 'candy_music_background_sound', 0.14);
+    this.soundButton = this.add.image(this.scale.width - 15, 68, 'sound_on')
+        .setOrigin(1, 0)
+        .setScale(1)
+        .setInteractive({ useHandCursor: true });
     this.levelUpSound = this.sound.add("level_up", { volume: 0.6, loop: false, });
     this.swapCandySound = this.sound.add("swap_candy");
     this.matchSound = this.sound.add("match_sound");
@@ -955,7 +952,7 @@ export default class MainGame extends Phaser.Scene {
     this.earthRocksSound = this.sound.add("earth_rocks_sound");
     this.startLevelSound = this.sound.add("start_level_sound");
     this.comboText = this.add.text(this.cameras.main.centerX, this.scale.height / 2, '', {
-        font: '48px montserrat-memo',
+        font: "48px 'Luckiest Guy'",
         color: '#FFD700',
         fontStyle: 'bold'
     }).setOrigin(0.5).setAlpha(0).setDepth(999);
@@ -964,7 +961,6 @@ export default class MainGame extends Phaser.Scene {
     await this.playIntroAnimation(); 
     await this.delay(400);
     await this.createGridWithoutMatches();
-    this.bgMusic.play(); 
 
     this.progressFrame = this.add.image(this.cameras.main.centerX, this.scale.height - 68, 'progress-frame').setOrigin(0.5)
     this.progressBar = this.add.graphics()

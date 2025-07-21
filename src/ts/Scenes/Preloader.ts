@@ -129,43 +129,54 @@ export default class Preloader extends Phaser.Scene {
 		/** Customizable. This text color will be used around the progress bar. */
 		const outerTextColor = '#ffffff';
 
-		const progressBar = this.add.graphics();
-		const progressBox = this.add.graphics();
-		progressBox.fillStyle(0x009FAF, 0.8);
-		progressBox.fillRect(width / 4, height / 2 - 30, width / 2, 50);
-		progressBox.setDepth(110);
-		progressBar.setDepth(110);
-		
-		const loadingText = this.make.text({
-			x: width / 2,
-			y: height / 2 - 50,
-			text: "Cargando",
-			style: {
-				font: "20px montserrat-memo",
-				color: "#E2D64B"
-			}
-		});
-		loadingText.setOrigin(0.5, 0.5);
-		loadingText.setDepth(110);
+        const boxWidth = 230;
+        const boxHeight = 30;
+        const boxX = (width - boxWidth) / 2;
+        const boxY = height / 2 - boxHeight / 2;
+
+		// 1. Fondo con borde
+	const progressBox = this.add.graphics();
+	progressBox.fillStyle(0x3B0037, 0.8); // fondo violeta
+	progressBox.fillRect(boxX, boxY, boxWidth, boxHeight);
+	progressBox.lineStyle(5, 0x3B0037, 1); // borde
+	progressBox.strokeRect(boxX, boxY, boxWidth, boxHeight);
+	progressBox.setDepth(110);
+
+	// 2. Barra de progreso (encima del fondo)
+	const progressBar = this.add.graphics();
+	progressBar.setDepth(111);
+
+	// 3. Texto superior "CARGANDO"
+	const loadingText = this.make.text({
+		x: width / 2,
+		y: boxY - 30,
+		text: "CARGANDO",
+		style: {
+			font: "24px 'Luckiest Guy'",
+			color: "#FFE516"
+		}
+	});
+	loadingText.setOrigin(0.5);
+	loadingText.setDepth(112);
 
 		const percentText = this.make.text({
 			x: width / 2,
-			y: height / 2 - 5,
+			y: boxY + boxHeight / 2,
 			text: "0%",
 			style: {
-				font: "18px montserrat-memo",
-				color: "#E2D64B"
+				font: "18px 'Luckiest Guy'",
+				color: "#FFE516"
 			}
 		});
-		percentText.setOrigin(0.5, 0.5);
-		percentText.setDepth(110);
+		percentText.setOrigin(0.5);
+		percentText.setDepth(112);
 
 		const assetText = this.make.text({
 			x: width / 2,
 			y: height / 2 + 50,
 			text: "",
 			style: {
-				font: "18px monospace",
+				font: "18px 'Luckiest Guy'",
 				color: outerTextColor
 			}
 		});
@@ -176,8 +187,8 @@ export default class Preloader extends Phaser.Scene {
 		this.load.on("progress", (value: number) => {
 			percentText.setText(parseInt(value * 100 + "", 10) + "%");
 			progressBar.clear();
-			progressBar.fillStyle(0x02055, 1); 
-			progressBar.fillRect((width / 4) + 10, (height / 2) - 30 + 10, (width / 2 - 10 - 10) * value, 30);
+			progressBar.fillStyle(0xC23CFB, 1); 
+			progressBar.fillRect(boxX, boxY, boxWidth * value, boxHeight);
 		});
 
 		// this.load.on("fileprogress", (file: Phaser.Loader.File) => {

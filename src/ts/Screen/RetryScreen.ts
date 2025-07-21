@@ -40,7 +40,7 @@ export class RetryScreen  {
       55,
       scoreValue,
       {
-        font: "40px montserrat-memo",
+        font: "40px 'Luckiest Guy'",
         color: "#E2D64B",
       }
     )
