@@ -16,7 +16,7 @@ const CANDY_WIDTH = 116 * 0.6;
 const CANDY_HEIGHT = 116 * 0.6;
 const GAP = 6
 const CANDY_FRAME_START = 1;
-const CANDY_FRAME_END = 4;
+const CANDY_FRAME_END = 5;
 const LOGO_X = 16;
 const LOGO_Y = 25; 
 
@@ -940,7 +940,7 @@ export default class MainGame extends Phaser.Scene {
     this.winnerScreen = new WinnerScreen(this)
     this.eventObserver = EventObserver.getInstance();
     this.levelUpScreen = new LevelUpScreen(this);
-    this.bgMusic = new BackgroundMusic(this, 'candy_music_background_sound', 0.23);
+    this.bgMusic = new BackgroundMusic(this, 'candy_music_background_sound', 0.14);
     this.levelUpSound = this.sound.add("level_up", { volume: 0.6, loop: false, });
     this.swapCandySound = this.sound.add("swap_candy");
     this.matchSound = this.sound.add("match_sound");
