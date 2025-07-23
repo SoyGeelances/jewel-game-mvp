@@ -23,8 +23,8 @@ export default class Preloader extends Phaser.Scene {
 		this.load.svg("powerBySvg", "powerBy_w.svg", {width:400, height:30, scale: 1});
 		this.load.svg("tevas_title", "tevas_title.svg");
 		this.load.svg("retry_button", "retry_button.svg");
-        this.load.image("logo_mogul_color", "logo_mogul_color.png");
-        this.load.image("logo_mogul_white", "logo_mogul_white.png");
+        this.load.image("logo_mogul_color", "logo_mogul_color.svg");
+        this.load.image("logo_mogul_white", "logo_mogul_white.svg");
         this.load.image('sparkle', 'sparkle_img.png');
         this.load.image('candy_glow', 'candy_glow_img.png');
         this.load.image('recarga_masti', 'recarga_masti.png');
@@ -55,9 +55,10 @@ export default class Preloader extends Phaser.Scene {
 		// this.load.image("tevas_title", "tevas_title.png");
 		this.load.image("tevas_message", "tevas_message.png");
 		this.load.image("tevas_button", "tevas_button.png");
-		this.load.image("copy_coupon_button", "copy_coupon_button.png");
+		this.load.image("copy_coupon_button", "copy_coupon_button.svg");
 		this.load.image("copied_coupon_button", "copied_button.png");
 		this.load.image("coupon_code_container", "coupon_code_container.png");
+        this.load.image("continuar_btn", "continuar_btn.png");
 
 		this.load.image("logo_candy_Arcor", "logo-candy-arcor.png");
         this.load.image("logo_candy_Arcor_win", "logo_candy_Arcor_win.png");
@@ -187,7 +188,7 @@ export default class Preloader extends Phaser.Scene {
 		this.load.on("progress", (value: number) => {
 			percentText.setText(parseInt(value * 100 + "", 10) + "%");
 			progressBar.clear();
-			progressBar.fillStyle(0xC23CFB, 1); 
+			progressBar.fillStyle(0xF23ADF, 1); 
 			progressBar.fillRect(boxX, boxY, boxWidth * value, boxHeight);
 		});
 

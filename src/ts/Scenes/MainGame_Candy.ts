@@ -16,14 +16,14 @@ const CANDY_WIDTH = 116 * 0.6;
 const CANDY_HEIGHT = 116 * 0.6;
 const GAP = 6
 const CANDY_FRAME_START = 1;
-const CANDY_FRAME_END = 5;
+const CANDY_FRAME_END = 4;
 const LOGO_X = 16;
 const LOGO_Y = 25; 
 
 // LEVELS
 const LEVELS = [
-  { level: 1, goal: 600, time: 30 },
-  { level: 2, goal: 1300, time: 35 },
+  { level: 1, goal: 300, time: 25 },
+
 ];
 
 
@@ -942,8 +942,8 @@ export default class MainGame extends Phaser.Scene {
     this.swapCandySound = this.sound.add("swap_candy");
     this.matchSound = this.sound.add("match_sound");
     this.shuffleCandySound = this.sound.add("shuffle_candies");
-    this.logoWhite = this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_white').setScale(0.23).setOrigin(0,0).setDepth(1);
-    this.logoColor = this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_color').setScale(0.23).setOrigin(0,0).setDepth(2).setCrop(0, 0, 0, 60);
+    this.logoWhite = this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_white').setScale(0.43).setOrigin(0,0).setDepth(1);
+    this.logoColor = this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_color').setScale(0.43).setOrigin(0,0).setDepth(2).setCrop(0, 0, 0, 60);
     this.powerDowmSound = this.sound.add("power_down_sound");
     this.electricSparksSound = this.sound.add("electric_sparks_sound");
     this.comboSound = this.sound.add("combo_sound");

@@ -17,7 +17,7 @@ export class Button {
 		 this.eventObserver =  EventObserver.getInstance();
     }
 
-    public createButton(): void {
+    public createButton(): Phaser.GameObjects.Image {
         this.button = this.scene.add.image(this.x, this.y, this.action.background)
         .setInteractive()
         .on('pointerdown', (e) => {
@@ -35,6 +35,7 @@ export class Button {
         .setDepth(100)
         .setScale(this.scaleX, this.scaleY);
 
+        return this.button;
     }
 
     private pressButtonEffect(): void {

@@ -51,7 +51,7 @@ export default class MainMenu extends Phaser.Scene {
 		Utilities.LogSceneMethodEntry("MainMenu", "create");
         const bgMusic = BackgroundMusic.getInstance();
         if (!bgMusic.isPlaying()) {
-            bgMusic.init(this, 'candy_music_background_sound', 0.13);
+            bgMusic.init(this, 'candy_music_background_sound', 0.1);
         }
 
 		if(!this.alreadyPlayignMusic) {

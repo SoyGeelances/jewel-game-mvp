@@ -1,6 +1,7 @@
 import Screen from "./Screen";
 import { Button } from "../components";
 import { promptActions } from "../types";
+import { applyButtonHoverEffect } from "../components/HoverButtons";
 
 export class PromptScreen extends Screen {
   protected promptTitle: Phaser.GameObjects.Image;
@@ -43,20 +44,29 @@ export class PromptScreen extends Screen {
     .setScale(scaleX, scaleY);
   }
 
-  setActions(promptActions: Array<promptActions>, deviationX=0, deviationY=0, separation=0, scaleX=1, scaleY=1) {
-    promptActions.forEach((action, index) => {
-      const button = new Button(
-          this.scene,
-          this.scene.cameras.main.centerX + deviationX,
-          this.scene.cameras.main.centerY + deviationY + (index * separation),
-          action,
-          scaleX,
-          scaleY
-      );
-      button.createButton();
-      this.actions.push(button);
-    });
-  }
+setActions(promptActions: Array<promptActions>, deviationX = 0, deviationY = 0, separation = 0, scaleX = 1, scaleY = 1): Phaser.GameObjects.Image[] {
+  const createdButtons: Phaser.GameObjects.Image[] = [];
+
+  promptActions.forEach((action, index) => {
+    const button = new Button(
+      this.scene,
+      this.scene.cameras.main.centerX + deviationX,
+      this.scene.cameras.main.centerY + deviationY + (index * separation),
+      action,
+      scaleX,
+      scaleY
+    );
+
+    const imageButton = button.createButton(); // ← ahora esto devuelve la imagen
+    applyButtonHoverEffect(imageButton);
+    createdButtons.push(imageButton);
+
+    this.actions.push(button); // si seguís usando tu lógica interna
+  });
+
+  return createdButtons;
+}
+
 
   show(): void {}
 

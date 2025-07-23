@@ -20,9 +20,9 @@ export class RetryScreen  {
 
   show(promptContent: promptContentConfig, promptType: string) {
     this.prompt.setBackground(promptType, 0, 0, 1.2, 1.2);
-    this.prompt.setTitle(promptContent.title, 0, -133, 1.2, 1.2);
-    this.prompt.setMessage(promptContent.message, 0, -30, 1.2, 1.2);
-    this.prompt.setActions(promptContent.actions, 0, 60, 65, 1.2, 1.2);
+    this.prompt.setTitle(promptContent.title, 0, -150, 1.2, 1.2);
+    this.prompt.setMessage(promptContent.message, 0, -35, 1.2, 1.2);
+    this.prompt.setActions(promptContent.actions, 0, 45, 65, 1, 1);
     this.scene.sound.add('retry').play();
     Footer.create(this.scene);
   }
