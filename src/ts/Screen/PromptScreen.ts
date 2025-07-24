@@ -57,11 +57,11 @@ setActions(promptActions: Array<promptActions>, deviationX = 0, deviationY = 0, 
       scaleY
     );
 
-    const imageButton = button.createButton(); // ← ahora esto devuelve la imagen
+    const imageButton = button.createButton(); 
     applyButtonHoverEffect(imageButton);
     createdButtons.push(imageButton);
 
-    this.actions.push(button); // si seguís usando tu lógica interna
+    this.actions.push(button); 
   });
 
   return createdButtons;

@@ -18,6 +18,11 @@ export class ButtonEventHandler {
                 if ((scene.game as Game).onCloseGame) (scene.game as Game).onCloseGame();
                 window.location.href = 'https://arcorencasa.com/tienda/';
                 break;
+            
+            case "gotoshop":
+                if ((scene.game as Game).onCloseGame) (scene.game as Game).onCloseGame();
+                window.location.href = 'https://arcorencasa.com/';
+                break;
 
             case "retry":
                 ButtonEventHandler.handlePlayAgain(scene);
@@ -59,10 +64,12 @@ export class ButtonEventHandler {
         const textArea = document.createElement('textarea');
         textArea.value = text;
         textArea.style.position = 'fixed';
-        textArea.style.left = '-9999px'; // Moverlo fuera de la pantalla
+        textArea.style.left = '-9999px';
         document.body.appendChild(textArea);
 
+        textArea.focus();
         textArea.select();
+
         try {
             document.execCommand('copy');
             console.log('Texto copiado usando el fallback');
@@ -74,14 +81,21 @@ export class ButtonEventHandler {
     }
 
     // Modificar handleCopyCode para usar la nueva lógica
+    private static isIOS(): boolean {
+        const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+            return /iPad|iPhone|iPod/.test(userAgent);
+    }
+
     private static handleCopyCode(scene: Phaser.Scene) {
         const code = (scene.game as Game).selectedCoupon;
 
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(code).then(() => {
-                //console.log("Copiado con clipboard API");
-            }).catch(err => {
-                //console.warn("Clipboard API falló, usando fallback", err);
+        if (ButtonEventHandler.isIOS()) {
+            ButtonEventHandler.fallbackCopyTextToClipboard(code);
+            return;
+        }
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(code).catch(() => {
                 ButtonEventHandler.fallbackCopyTextToClipboard(code);
             });
         } else {

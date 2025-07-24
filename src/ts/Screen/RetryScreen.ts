@@ -19,10 +19,10 @@ export class RetryScreen  {
   }
 
   show(promptContent: promptContentConfig, promptType: string) {
-    this.prompt.setBackground(promptType, 0, 0, 1.2, 1.2);
-    this.prompt.setTitle(promptContent.title, 0, -150, 1.2, 1.2);
-    this.prompt.setMessage(promptContent.message, 0, -35, 1.2, 1.2);
-    this.prompt.setActions(promptContent.actions, 0, 45, 65, 1, 1);
+    this.prompt.setBackground(promptType, 0, 0, 1, 1);
+    this.prompt.setTitle(promptContent.title, 0, -115, 1, 1);
+    this.prompt.setMessage(promptContent.message, 0, -30, 1, 1);
+    this.prompt.setActions(promptContent.actions, 0, 25, 55, 1, 1);
     this.scene.sound.add('retry').play();
     Footer.create(this.scene);
   }
@@ -31,7 +31,7 @@ export class RetryScreen  {
   public setFinalScore(scoreValue) {
     this.prompt.setSplashBackground();
     this.finalScore = this.scene.add.image(this.scene.cameras.main.centerX, 60, "final_score")
-    .setScale(1.1, 1.1)
+    .setScale(1, 1)
     .setDepth(110)
     .setOrigin(0.5, 0.5);
 

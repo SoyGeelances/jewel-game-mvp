@@ -78,10 +78,10 @@ export class LevelUpScreen extends Phaser.Events.EventEmitter {
       align: 'center',
     }).setOrigin(0.5);
 
-    const boxMeta = this.scene.add.rectangle( this.goalText.x, this.goalText.y, 250,this.goalText.height + 20, 0x3B0037)
+    const boxMeta = this.scene.add.rectangle( this.goalText.x, this.goalText.y + 2, 250,this.goalText.height + 20, 0x3B0037)
     .setOrigin(0.5)
     .setStrokeStyle(4, 0xFFFFFF)
-    boxMeta.setDepth(this.goalText.depth - 1);;
+    boxMeta.setDepth(this.goalText.depth - 1);
 
     // Botón continuar
     this.continueButton = this.scene.add.image(centerX, centerY + 200, 'continuar_btn')

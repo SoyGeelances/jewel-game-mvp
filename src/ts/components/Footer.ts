@@ -8,7 +8,7 @@ export class Footer {
 			if(window) window.open("https://minimalart.co/", "_blank")
 		})
 		.setOrigin(1, 1)
-    .setDepth(110);
+        .setDepth(9999);
   }
 
 }

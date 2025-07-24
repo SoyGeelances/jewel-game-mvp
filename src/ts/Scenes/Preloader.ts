@@ -22,7 +22,7 @@ export default class Preloader extends Phaser.Scene {
 		//this.load.image("powerBy", "powerBy_w.png");
 		this.load.svg("powerBySvg", "powerBy_w.svg", {width:400, height:30, scale: 1});
 		this.load.svg("tevas_title", "tevas_title.svg");
-		this.load.svg("retry_button", "retry_button.svg");
+		//this.load.svg("retry_button", "retry_button.svg");
         this.load.image("logo_mogul_color", "logo_mogul_color.svg");
         this.load.image("logo_mogul_white", "logo_mogul_white.svg");
         this.load.image('sparkle', 'sparkle_img.png');
@@ -43,8 +43,8 @@ export default class Preloader extends Phaser.Scene {
 		this.load.image("final_score", "final_score.png");
 		this.load.image("prompt_screen", "prompt_screen.png");
 		this.load.image("retry_message", "cada-vez-mas-cerca.png");
-		this.load.image("close_button", "close.png");
-		// this.load.image("retry_button", "retry-btn.png");
+		this.load.image("pause_btn", "pause_btn.png");
+		this.load.image("retry_btn", "retry_btn.png");
 		this.load.image("seguiintentando_title", "segui-intentando.png");
 		this.load.image("porpoco_title", "porpoco_title.png");
 		this.load.image("exit_arcor_button", "ir_a_tienda.png");
@@ -52,13 +52,18 @@ export default class Preloader extends Phaser.Scene {
 		this.load.image("win_title", "win_title.png");
 		this.load.image("win_message", "win_message.png");
 		this.load.image("background_secondary", "background_secondary.png");
+        this.load.image("te_vas_background", "te_vas_background.png");
 		// this.load.image("tevas_title", "tevas_title.png");
 		this.load.image("tevas_message", "tevas_message.png");
 		this.load.image("tevas_button", "tevas_button.png");
-		this.load.image("copy_coupon_button", "copy_coupon_button.svg");
+        this.load.image("goto_shop_btn", "goto_shop_btn.png");
+		this.load.image("copy_coupon_button", "copy_coupon_button.png");
 		this.load.image("copied_coupon_button", "copied_button.png");
 		this.load.image("coupon_code_container", "coupon_code_container.png");
         this.load.image("continuar_btn", "continuar_btn.png");
+        this.load.image('how_to_play', 'how_to_play.png');
+        this.load.image('close_btn', 'close_btn.png'); 
+        this.load.image('icon_help', 'icon_help.png');
 
 		this.load.image("logo_candy_Arcor", "logo-candy-arcor.png");
         this.load.image("logo_candy_Arcor_win", "logo_candy_Arcor_win.png");
@@ -130,7 +135,7 @@ export default class Preloader extends Phaser.Scene {
 		/** Customizable. This text color will be used around the progress bar. */
 		const outerTextColor = '#ffffff';
 
-        const boxWidth = 230;
+        const boxWidth = 305;
         const boxHeight = 30;
         const boxX = (width - boxWidth) / 2;
         const boxY = height / 2 - boxHeight / 2;
@@ -153,7 +158,7 @@ export default class Preloader extends Phaser.Scene {
 		y: boxY - 30,
 		text: "CARGANDO",
 		style: {
-			font: "24px 'Luckiest Guy'",
+			font: "32px 'Luckiest Guy'",
 			color: "#FFE516"
 		}
 	});

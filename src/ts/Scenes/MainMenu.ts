@@ -17,11 +17,14 @@ export default class MainMenu extends Phaser.Scene {
 	 * Unique name of the scene.
 	 */
 	public static Name = "MainMenu";
+    private helpBtn!: Phaser.GameObjects.Image;
 
 	public init(){
-		//this.closeButton = new CloseButton(this);
+		this.closeButton = new CloseButton(this);
 		this.retryScreen = new RetryScreen(this);
 		this.eventObserver = EventObserver.getInstance();
+        const bgMusic = BackgroundMusic.getInstance();
+        bgMusic.init(this, 'candy_music_background_sound'); 
 
 		// this.game.config.audio.disableWebAudio = true;
 		//this.game.config.audio.disableWebAudio = false;
@@ -47,12 +50,50 @@ export default class MainMenu extends Phaser.Scene {
 		this.scene.resume(MainMenu.Name)
 	}
 
+    private showHowToPlayModal() {
+        const overlay = this.add.image(this.scale.width / 2, this.scale.height / 2, 'background')
+            .setScale(1)
+            .setOrigin(0.5)
+            .setDepth(100);
+
+        const howToImg = this.add.image(this.scale.width / 2, this.scale.height / 2, 'how_to_play')
+            .setScale(1)
+            .setOrigin(0.5)
+            .setDepth(101);
+
+        const logoImg = this.add.image(this.scale.width / 2, howToImg.y - 310, 'logo_candy_Arcor_win')
+            .setScale(0.75)
+            .setOrigin(0.5)
+            .setDepth(101);
+
+        const closeBtn = this.add.image(this.scale.width - 15, 15, 'close_btn')
+            .setOrigin(1, 0)
+            .setScale(1)
+            .setDepth(102)
+            .setInteractive({ useHandCursor: true });
+
+        const destroyModal = () => {
+            overlay.destroy();
+            howToImg.destroy();
+            closeBtn.destroy();
+            logoImg.destroy();
+        };
+
+        Footer.create(this);
+
+        closeBtn.on('pointerdown', destroyModal);
+        overlay.setInteractive().on('pointerdown', destroyModal); 
+    }
+
+
 	public create(): void {
 		Utilities.LogSceneMethodEntry("MainMenu", "create");
-        const bgMusic = BackgroundMusic.getInstance();
-        if (!bgMusic.isPlaying()) {
-            bgMusic.init(this, 'candy_music_background_sound', 0.1);
-        }
+
+        this.helpBtn = this.add.image(this.scale.width - 15, 15, 'icon_help').setOrigin(1, 0).setDepth(2).setInteractive({ useHandCursor: true });
+        this.helpBtn.on('pointerdown', () => {
+            
+        this.showHowToPlayModal();
+        });
 
 		if(!this.alreadyPlayignMusic) {
 			this.alreadyPlayignMusic = true;
@@ -71,6 +112,7 @@ export default class MainMenu extends Phaser.Scene {
 
         background.setScale(scale);
 
+        BackgroundMusic.getInstance().showMuteButton(this);
 
 		// const soundBtn = this.add.image(35, 55, "sound_on").setScale(0.5);
 		// soundBtn.setOrigin(0.5, 0.5);

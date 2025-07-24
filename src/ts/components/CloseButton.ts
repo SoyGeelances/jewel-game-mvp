@@ -21,8 +21,8 @@ export class CloseButton {
 				deviationX,
 			this.scene.cameras.main.scrollY + margin + deviationY,
 			buttons.close,
-			1.05,
-			1.05
+			1,
+			1
 		);
 
 		this.button.createButton();

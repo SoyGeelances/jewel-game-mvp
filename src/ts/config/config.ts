@@ -2,11 +2,15 @@ const buttons = {
 
   retry: {
     eventName: 'retry',
-    background: "retry_button"
+    background: "retry_btn"
   },
   exitArcor: {
     eventName: 'exit',
     background: "exit_arcor_button"
+  },
+  goToShop: {
+    eventName: 'gotoshop',
+    background: "goto_shop_btn"
   },
   back: {
     eventName: 'back',
@@ -18,7 +22,7 @@ const buttons = {
   },
   close: {
     eventName: 'close',
-    background: "close_button"
+    background: "pause_btn"
   },
   copied: {
     eventName: 'copy',
@@ -60,7 +64,7 @@ const prompt = {
     message:"tevas_message",
     actions: [
       buttons.back,
-      buttons.exitArcor
+      buttons.goToShop
     ],
     data: {}
   }

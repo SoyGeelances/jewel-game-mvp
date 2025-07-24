@@ -16,7 +16,7 @@ const CANDY_WIDTH = 116 * 0.6;
 const CANDY_HEIGHT = 116 * 0.6;
 const GAP = 6
 const CANDY_FRAME_START = 1;
-const CANDY_FRAME_END = 4;
+const CANDY_FRAME_END = 6;
 const LOGO_X = 16;
 const LOGO_Y = 25; 
 
@@ -25,7 +25,6 @@ const LEVELS = [
   { level: 1, goal: 300, time: 25 },
 
 ];
-
 
 export default class MainGame extends Phaser.Scene {
   public static Name = "MainGame"
@@ -71,7 +70,8 @@ export default class MainGame extends Phaser.Scene {
   private gameState: 'playing' | 'paused' | 'ended' = 'playing';
   private closeButton: CloseButton;
   private bgMusic!: BackgroundMusic;
-  private soundButton!: Phaser.GameObjects.Image;
+  private levelText!: Phaser.GameObjects.Text;
+  private goalText!: Phaser.GameObjects.Text;
 
 
   preload() {
@@ -84,7 +84,7 @@ export default class MainGame extends Phaser.Scene {
     return { x, y }
   }
 
-  async createGrid() {
+  /*async createGrid() {
     this.offsetX = (this.scale.width - (GRID_WIDTH * CANDY_WIDTH + (GRID_WIDTH - 1) * GAP)) / 2
     const gridHeight = GRID_HEIGHT * CANDY_HEIGHT + (GRID_HEIGHT - 1) * GAP
     this.offsetY = (this.scale.height - gridHeight) / 2
@@ -111,7 +111,7 @@ export default class MainGame extends Phaser.Scene {
     }
 
     this.comboText.setY(this.offsetY - 50);
-  }
+  }*/
 
   private createCandy(x: number, y: number, candyType: number, row: number, col: number): Phaser.GameObjects.Sprite {
     const candy = this.add.sprite(x, y, 'candies', candyType).setScale(0.6);
@@ -302,10 +302,10 @@ export default class MainGame extends Phaser.Scene {
   }
 
   private updateProgressBar(progress: number) {
-    const barWidth = 320
-    const barHeight = 29
+    const barWidth = 357
+    const barHeight = 26
     const x = this.cameras.main.centerX - barWidth / 2
-    const y = this.scale.height - 86
+    const y = this.scale.height - 85
     const radius = 5;
 
     this.progressBar.clear()
@@ -371,7 +371,7 @@ export default class MainGame extends Phaser.Scene {
     this.closeButton?.destroy?.();
     this.progressTimer?.remove(false);
     this.clockTickingSound?.stop();
-    this.bgMusic?.stop();
+    BackgroundMusic.getInstance().destroy();
 
     if (this.scoreValue >= this.scoreGoal) {
         this.winnerScreen.show(prompt.win, "winner_screen");
@@ -444,28 +444,6 @@ export default class MainGame extends Phaser.Scene {
 
     this.lastMovedCandy = null; //limpiar caramelo seleccionado
  }
-
-  private SparkleEffect(x: number, y: number) {
-    const emitter = this.add.particles(x, y, 'sparkle', {
-        speed: { min: 60, max: 120 },
-        angle: { min: 0, max: 360 },
-        scale: { start: 0.4, end: 0 },
-        alpha: { start: 1, end: 0.2 },
-        lifespan: 250,
-        quantity: 5,
-        gravityY: 0,
-        blendMode: 'LIGHTEN',
-        emitZone: {
-        type: 'random',
-        source: new Phaser.Geom.Circle(0, 0, 20)
-        }
-    });
-    emitter.setDepth(0); // o -1 si querés asegurarte
-
-    this.time.delayedCall(300, () => {
-        emitter.destroy();
-    });
-  }
 
   private showComboX5Bonus(x: number, y: number) {
         this.comboX5Sound.play()
@@ -743,7 +721,7 @@ export default class MainGame extends Phaser.Scene {
   private async playIntroAnimation(): Promise<void> {
     return new Promise((resolve) => {
         // UI y elementos iniciales
-        const scoreImage = this.add.image(10, 16, 'score').setOrigin(0, 0);
+        const scoreImage = this.add.image(10, 18, 'score').setOrigin(0, 0);
         const scoreWidth = scoreImage.width;
         const scoreHeight = scoreImage.height;
 
@@ -753,17 +731,6 @@ export default class MainGame extends Phaser.Scene {
         color: '#FEC647',
         fontStyle: 'bold',
         }).setOrigin(1, 0.5);
-
-        // Botón de sonido
-        this.soundButton = this.add.image(this.scale.width - 15, 68, 'sound_on')
-        .setOrigin(1, 0)
-        .setScale(1)
-        .setInteractive({ useHandCursor: true });
-
-        this.soundButton.on('pointerdown', () => {
-            const isMuted = BackgroundMusic.getInstance().toggleMute();
-            this.soundButton.setTexture(isMuted ? 'sound_off' : 'sound_on');
-        });
 
         this.closeButton.create();
         this.eventObserver.on('button-clicked', (buttonId) => {
@@ -827,7 +794,40 @@ export default class MainGame extends Phaser.Scene {
         .setAlpha(0)
         .setDepth(999);
 
-    // Fade in inicial
+    // Título level
+    this.levelText = this.add.text(centerX, centerY + 165, 'NIVEL 1', {
+        font: "53px 'Luckiest Guy'",
+        color: '#FBB040',
+        align: 'center'
+    }).setOrigin(0.5).setStroke('#FFFFFF', 10);
+
+    // Meta
+    this.goalText = this.add.text(centerX, centerY + 230, 'META: 300 PUNTOS', {
+        font: "20px 'Luckiest Guy'",
+        color: '#FEC647',
+        align: 'center',
+    }).setOrigin(0.5);
+
+    const boxMeta = this.add.rectangle( this.goalText.x, this.goalText.y + 2, 250,this.goalText.height + 20, 0x3B0037)
+    .setOrigin(0.5)
+    .setStrokeStyle(4, 0xFFFFFF)
+    boxMeta.setDepth(this.goalText.depth - 1);
+
+    this.tweens.add({
+        targets: this.levelText,
+        scale: { from: 0.89, to: 1 },
+        duration: 700,
+        ease: "Sine.easeIn",
+	});
+
+    this.tweens.add({
+        targets: [this.goalText, boxMeta],
+        scale: { from: 0.89, to: 1 },
+        duration: 700,
+        ease: "Sine.easeIn",
+	});
+
+    // RecargaMAsti
     this.tweens.add({
         targets: this.recargaMasti,
         scale: { from: 1, to: 0.65 },
@@ -835,27 +835,48 @@ export default class MainGame extends Phaser.Scene {
         duration: 700,
         ease: 'Back.Out',
         onComplete: () => {
-        // Luego de un pequeño delay, animar hacia el logo
+
         this.time.delayedCall(700, () => {
+            
             this.tweens.add({
-            targets: this.recargaMasti,
-            x: targetX,
-            y: targetY,
-            scale: 0.15,
-            alpha: 0,
-            duration: 2000,
-            ease: 'Cubic.easeInOut',
-            onComplete: () => this.recargaMasti.destroy()
+                targets: this.recargaMasti,
+                x: targetX,
+                y: targetY,
+                scale: 0.15,
+                alpha: 0,
+                duration: 2300,
+                ease: 'Cubic.easeInOut',
+                onComplete: () => ( this.recargaMasti.destroy())
+                });
             });
-        });
+
+            // levelTExt
+            this.tweens.add({
+                targets: this.levelText,
+                alpha: 0,
+                duration: 2300,
+                ease: 'Sine.easeInOut',
+                onComplete: () => (this.levelText.destroy())
+            });
+
+            // goalText y boxMeta
+            this.tweens.add({
+                targets: [this.goalText, boxMeta],
+                alpha: 0,
+                duration: 2300,
+                ease: 'Sine.easeInOut',
+                onComplete: () => {
+                    this.goalText.destroy();
+                    boxMeta.destroy();
+                }
+            });
         }
     });
   }
 
-
   private spawnFallingCandies(amount: number) {
     for (let i = 0; i < amount; i++) {
-        const type = Phaser.Math.Between(0, 8);
+        const type = Phaser.Math.Between(CANDY_FRAME_START, CANDY_FRAME_END);
         const x = Phaser.Math.Between(0, this.scale.width + 50);
         const y = Phaser.Math.Between(-200, -40);
 
@@ -924,6 +945,7 @@ export default class MainGame extends Phaser.Scene {
     this.scoreGoal = level.goal;
     this.totalTime = level.time;
     this.levelStartScore = this.scoreValue;
+    BackgroundMusic.getInstance().showMuteButton(this);
   }
 
 
@@ -934,10 +956,6 @@ export default class MainGame extends Phaser.Scene {
     this.winnerScreen = new WinnerScreen(this)
     this.eventObserver = EventObserver.getInstance();
     this.levelUpScreen = new LevelUpScreen(this);
-    this.soundButton = this.add.image(this.scale.width - 15, 68, 'sound_on')
-        .setOrigin(1, 0)
-        .setScale(1)
-        .setInteractive({ useHandCursor: true });
     this.levelUpSound = this.sound.add("level_up", { volume: 0.6, loop: false, });
     this.swapCandySound = this.sound.add("swap_candy");
     this.matchSound = this.sound.add("match_sound");
