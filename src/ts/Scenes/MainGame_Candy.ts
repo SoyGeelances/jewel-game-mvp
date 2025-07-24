@@ -22,7 +22,7 @@ const LOGO_Y = 25;
 
 // LEVELS
 const LEVELS = [
-  { level: 1, goal: 300, time: 25 },
+  { level: 1, goal: 30, time: 25 },
 
 ];
 

@@ -61,24 +61,28 @@ export class ButtonEventHandler {
     
     // Método para copiar el texto en otros navegadores o usando el fallback
     private static fallbackCopyTextToClipboard(text: string) {
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-9999px';
-        document.body.appendChild(textArea);
+  const input = document.createElement('input');
+  input.value = text;
+  input.readOnly = true;
+  input.style.position = 'fixed';
+  input.style.opacity = '0';
+  input.style.top = '0';
+  input.style.left = '0';
+  input.style.pointerEvents = 'none';
 
-        textArea.focus();
-        textArea.select();
+  document.body.appendChild(input);
+  input.select();
 
-        try {
-            document.execCommand('copy');
-            console.log('Texto copiado usando el fallback');
-        } catch (err) {
-            console.error('Error al copiar el texto usando el fallback', err);
-        }
+  try {
+    document.execCommand('copy');
+    console.log('Copiado (iOS compatible)');
+  } catch (err) {
+    console.error('Error al copiar (iOS fallback)', err);
+  }
 
-        document.body.removeChild(textArea);
-    }
+  document.body.removeChild(input);
+}
+
 
     // Modificar handleCopyCode para usar la nueva lógica
     private static isIOS(): boolean {
@@ -86,20 +90,78 @@ export class ButtonEventHandler {
             return /iPad|iPhone|iPod/.test(userAgent);
     }
 
+    private static showCouponInput(scene: Phaser.Scene, code: string) {
+  // Evitar duplicados
+  const existing = document.getElementById("couponInput");
+  if (existing) existing.remove();
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = code;
+  input.readOnly = true;
+  input.id = "couponInput";
+
+  // Estilos visuales
+  Object.assign(input.style, {
+  position: "absolute",
+  top: `${scene.scale.height / 2 + 85}px`,
+  left: "50%", 
+  transform: "translate(-50%, -50%)",
+  fontSize: "23px",
+  lineHeight: "23px",
+  fontFamily: "'Luckiest Guy', sans-serif",
+  fontWeight: "normal",
+  color: "#ffffff",
+  backgroundColor: "#294256", 
+  border: "none",
+  borderRadius: "10px",
+  padding: "15px 7px 12px 7px",
+  textAlign: "center",
+  zIndex: "9999",
+  pointerEvents: "auto",
+  textShadow: "none",
+  WebkitTextStroke: "0",
+  outline: "none",
+  boxShadow: "none",
+  height: "auto",  
+  boxSizing: "border-box",
+});
+
+  //selecciona y copia
+  input.onclick = () => {
+    input.select();
+    document.execCommand("copy");
+    input.blur();
+
+    // Feedback visual en Phaser
+    const toast = scene.add.text(scene.scale.width / 2, scene.scale.height - 40, "¡Copiado!", {
+      font: "18px Arial",
+      color: "#ffffff",
+      backgroundColor: "#000000",
+      padding: { left: 10, right: 10, top: 5, bottom: 5 },
+    }).setOrigin(0.5).setDepth(1000);
+
+    scene.time.delayedCall(1500, () => toast.destroy());
+  };
+
+  document.body.appendChild(input);
+}
+
+
     private static handleCopyCode(scene: Phaser.Scene) {
-        const code = (scene.game as Game).selectedCoupon;
+  const code = (scene.game as Game).selectedCoupon;
 
-        if (ButtonEventHandler.isIOS()) {
-            ButtonEventHandler.fallbackCopyTextToClipboard(code);
-            return;
-        }
+  // Mostrar el input visible para usuarios de iOS
+  ButtonEventHandler.showCouponInput(scene, code);
 
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(code).catch(() => {
-                ButtonEventHandler.fallbackCopyTextToClipboard(code);
-            });
-        } else {
-            ButtonEventHandler.fallbackCopyTextToClipboard(code);
-        }
-    }
+  // Intentar copiar automáticamente también
+  if (navigator.clipboard && !ButtonEventHandler.isIOS()) {
+    navigator.clipboard.writeText(code).catch(() => {
+      ButtonEventHandler.fallbackCopyTextToClipboard(code);
+    });
+  } else {
+    ButtonEventHandler.fallbackCopyTextToClipboard(code);
+  }
+}
+
 }
