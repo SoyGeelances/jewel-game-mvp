@@ -73,17 +73,18 @@ export class WinnerScreen  {
 private setWinnerCouponCode() {
   const code = this.scene.game.getCouponCode();
 
-  // Eliminar cualquier textarea existente
-  const existing = document.getElementById("couponTextarea");
+  // Eliminar cualquier input existente
+  const existing = document.getElementById("couponInput");
   if (existing) existing.remove();
 
-  const textarea = document.createElement("textarea");
-  textarea.value = code;
-  textarea.readOnly = true;
-  textarea.id = "couponTextarea";
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = code;
+  input.readOnly = true;
+  input.id = "couponInput";
 
-  // Estilo visual (idéntico al que usabas)
-  Object.assign(textarea.style, {
+  // Estilo para que se vea como el cupón anterior
+  Object.assign(input.style, {
     position: "absolute",
     top: `${this.scene.scale.canvas.offsetTop + this.scene.cameras.main.centerY + 80}px`,
     left: `${this.scene.scale.canvas.offsetLeft + this.scene.cameras.main.centerX}px`,
@@ -105,33 +106,25 @@ private setWinnerCouponCode() {
     outline: "none",
     boxShadow: "none",
     height: "auto",
-    resize: "none",
     boxSizing: "border-box",
   });
 
-  textarea.onclick = () => {
-    textarea.focus();
-    textarea.select();
+  input.onclick = () => {
+    input.select();
+    document.execCommand("copy");
+    input.blur();
 
-    try {
-      const copied = document.execCommand("copy");
+    const toast = this.scene.add.text(this.scene.scale.width / 2, this.scene.scale.height - 40, "¡Copiado!", {
+      font: "18px Arial",
+      color: "#ffffff",
+      backgroundColor: "#000000",
+      padding: { left: 10, right: 10, top: 5, bottom: 5 },
+    }).setOrigin(0.5).setDepth(1000);
 
-      const msg = copied ? "¡Copiado!" : "No se pudo copiar";
-
-      const toast = this.scene.add.text(this.scene.scale.width / 2, this.scene.scale.height - 40, msg, {
-        font: "18px Arial",
-        color: "#ffffff",
-        backgroundColor: "#000000",
-        padding: { left: 10, right: 10, top: 5, bottom: 5 },
-      }).setOrigin(0.5).setDepth(1000);
-
-      this.scene.time.delayedCall(1500, () => toast.destroy());
-    } catch (e) {
-      console.warn("Copiado falló", e);
-    }
+    this.scene.time.delayedCall(1500, () => toast.destroy());
   };
 
-  document.body.appendChild(textarea);
+  document.body.appendChild(input);
 }
 
 

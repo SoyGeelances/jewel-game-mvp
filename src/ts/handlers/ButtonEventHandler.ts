@@ -88,6 +88,50 @@ private static fallbackCopyTextToClipboard(text: string) {
 
     document.body.removeChild(input);
   }
+
+private static copyToClipboard(value: string): boolean {
+  let input: HTMLInputElement | null = null;
+  let result: boolean | null = null;
+
+  try {
+    input = document.createElement('input');
+    input.setAttribute('readonly', 'true');
+    input.setAttribute('contenteditable', 'true');
+    input.style.position = 'fixed';
+    input.style.opacity = '0';
+    input.style.pointerEvents = 'none';
+    input.value = value;
+
+    document.body.appendChild(input);
+
+    input.focus();
+    input.select();
+
+    // Extra: iOS necesita también esto
+    input.setSelectionRange(0, input.value.length);
+
+    result = document.execCommand('copy');
+  } catch (err) {
+    console.error(err);
+    result = null;
+  } finally {
+    if (input) {
+      document.body.removeChild(input);
+    }
+  }
+
+  // Fallback manual
+  if (!result) {
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const copyHotkey = isMac ? '⌘C' : 'CTRL+C';
+    result = prompt(`Presioná ${copyHotkey} y luego Enter`, value) !== null;
+  }
+
+  return !!result;
+}
+
+
+
   private static paraIOS(inputElement: HTMLInputElement) {
     console.log("nueva accion");
   inputElement.focus();
@@ -114,19 +158,18 @@ private static fallbackCopyTextToClipboard(text: string) {
       console.log("ios precionado");
       alert("ios")
       //input.click(); // 👈 fuerza el click = selecciona y copia
-      ButtonEventHandler.paraIOS(input);
+      ButtonEventHandler.copyToClipboard(input.value);
     } else {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         console.log("2do else");
-        alert("android")
         const input = document.getElementById("couponInput") as HTMLInputElement;
-        ButtonEventHandler.paraIOS(input);
-        navigator.clipboard.writeText(code).catch(() => {
+        ButtonEventHandler.copyToClipboard(input.value);
+        /*navigator.clipboard.writeText(code).catch(() => {
           ButtonEventHandler.fallbackCopyTextToClipboard(code);
-        });
+        });*/
       } else {
         console.log("3er else");
-        ButtonEventHandler.fallbackCopyTextToClipboard(code);
+       /* ButtonEventHandler.fallbackCopyTextToClipboard(code);*/
       }
     }
   }
