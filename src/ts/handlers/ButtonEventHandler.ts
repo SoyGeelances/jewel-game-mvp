@@ -65,6 +65,39 @@ export class ButtonEventHandler {
         const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
             return /iPad|iPhone|iPod/.test(userAgent);
     }
+
+private static copyInputValueManually(inputId: string, scene: Phaser.Scene) {
+    alert("copy forzado")
+  const input = document.getElementById(inputId) as HTMLInputElement;
+
+  if (!input) {
+    console.warn(`No se encontró el input con id: ${inputId}`);
+    return;
+  }
+
+  input.focus();
+  input.select();
+
+  let success = false;
+
+  try {
+    success = document.execCommand("copy");
+  } catch (err) {
+    console.error("Error al intentar copiar con execCommand:", err);
+  }
+
+  const message = success ? "¡Copiado!" : "No se pudo copiar. Copialo manualmente.";
+
+  const toast = scene.add.text(scene.scale.width / 2, scene.scale.height - 40, message, {
+    font: "18px Arial",
+    color: "#ffffff",
+    backgroundColor: "#000000",
+    padding: { left: 10, right: 10, top: 5, bottom: 5 },
+  }).setOrigin(0.5).setDepth(1000);
+
+  scene.time.delayedCall(2000, () => toast.destroy());
+}
+
 private static fallbackCopyTextToClipboard(text: string) {
     const input = document.createElement("input");
     input.value = text;
@@ -92,6 +125,7 @@ private static fallbackCopyTextToClipboard(text: string) {
 
     if (ButtonEventHandler.isIOS()) {
       // Crea el input y dispara su click directamente
+      ButtonEventHandler.copyInputValueManually("couponInput", scene);
       const input = document.getElementById("couponInput") as HTMLInputElement;
       console.log("ios precionado");
       alert("ios")
