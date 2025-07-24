@@ -70,47 +70,63 @@ export class WinnerScreen  {
 		});
   }
 
-  private setWinnerCouponCode() {
-    this.couponCodeContainer = this.scene.add.image(
-        this.scene.cameras.main.centerX, 
-        this.scene.cameras.main.centerY + 85, 
-        "coupon_code_container"
-    )
-    .setOrigin(0.5, 0.5)
-    .setDepth(10)
-    .setScale(1.1, 1.1);
+private setWinnerCouponCode() {
+  const code = this.scene.game.getCouponCode();
 
-    this.couponCode = this.scene.add.text(
-      this.scene.cameras.main.centerX, 
-      this.scene.cameras.main.centerY + 70,
-      this.scene.game.getCouponCode(),
-      {
-          font: "23px 'Luckiest Guy'",
-          color: "#FFFFFF",
-      }
-    )
-    .setOrigin(0.5, 0.5)
-    .setDepth(10)
-    .setScale(1, 1);
+  // Eliminar cualquier input existente
+  const existing = document.getElementById("couponInput");
+  if (existing) existing.remove();
 
-    this.scene.tweens.add({
-      targets: this.couponCode,
-      y: this.couponCode.y - 50,  // Hace que el texto suba
-      scaleY: 1,  // Estira un poco el texto para simular el brinco
-      duration: 200,  // Duración de la subida
-      ease: 'Power1',
-      yoyo: true,  // Hace que vuelva a su posición original
-      onComplete: () => {
-          // Animación de caída
-          this.scene.tweens.add({
-              targets: this.couponCode,
-              y: this.scene.cameras.main.centerY + 83,  // Hace que caiga un poco más abajo
-              duration: 30,  // Duración de la caída
-              ease: 'Bounce.easeOut',  // Efecto de rebote al caer
-          });
-      }
-    });
-  }
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = code;
+  input.readOnly = true;
+  input.id = "couponInput";
+
+  // Estilo para que se vea como el cupón anterior
+  Object.assign(input.style, {
+    position: "absolute",
+    top: `${this.scene.scale.canvas.offsetTop + this.scene.cameras.main.centerY + 80}px`,
+    left: `${this.scene.scale.canvas.offsetLeft + this.scene.cameras.main.centerX}px`,
+    transform: "translate(-50%, -50%)",
+    fontSize: "23px",
+    lineHeight: "23px",
+    fontFamily: "'Luckiest Guy', sans-serif",
+    fontWeight: "normal",
+    color: "#ffffff",
+    backgroundColor: "#294256",
+    border: "none",
+    borderRadius: "10px",
+    padding: "15px 7px 12px 7px",
+    textAlign: "center",
+    zIndex: "9999",
+    pointerEvents: "auto",
+    textShadow: "none",
+    WebkitTextStroke: "0",
+    outline: "none",
+    boxShadow: "none",
+    height: "auto",
+    boxSizing: "border-box",
+  });
+
+  input.onclick = () => {
+    input.select();
+    document.execCommand("copy");
+    input.blur();
+
+    const toast = this.scene.add.text(this.scene.scale.width / 2, this.scene.scale.height - 40, "¡Copiado!", {
+      font: "18px Arial",
+      color: "#ffffff",
+      backgroundColor: "#000000",
+      padding: { left: 10, right: 10, top: 5, bottom: 5 },
+    }).setOrigin(0.5).setDepth(1000);
+
+    this.scene.time.delayedCall(1500, () => toast.destroy());
+  };
+
+  document.body.appendChild(input);
+}
+
 
     private setMessageWinner() {
     this.couponCodeContainer = this.scene.add.image(
