@@ -66,80 +66,70 @@ export class ButtonEventHandler {
             return /iPad|iPhone|iPod/.test(userAgent);
     }
 
-private static copyInputValueManually(inputId: string, scene: Phaser.Scene) {
-    alert("copy forzado")
-  const input = document.getElementById(inputId) as HTMLInputElement;
+private static async copyToClipboard(text: string, scene: Phaser.Scene): Promise<void> {
+        // Función para mostrar notificación en la escena
+        const showNotification = (message: string, color: string = "#ffffff") => {
+            const notification = scene.add.text(
+                scene.cameras.main.centerX,
+                scene.cameras.main.centerY,
+                message,
+                { fontSize: "24px", color, align: "center" }
+            ).setOrigin(0.5);
+            scene.time.delayedCall(2000, () => notification.destroy()); // Desaparece tras 2 segundos
+        };
 
-  if (!input) {
-    console.warn(`No se encontró el input con id: ${inputId}`);
-    return;
-  }
-
-  input.focus();
-  input.select();
-
-  let success = false;
-
-  try {
-    success = document.execCommand("copy");
-  } catch (err) {
-    console.error("Error al intentar copiar con execCommand:", err);
-  }
-
-  const message = success ? "¡Copiado!" : "No se pudo copiar. Copialo manualmente.";
-
-  const toast = scene.add.text(scene.scale.width / 2, scene.scale.height - 40, message, {
-    font: "18px Arial",
-    color: "#ffffff",
-    backgroundColor: "#000000",
-    padding: { left: 10, right: 10, top: 5, bottom: 5 },
-  }).setOrigin(0.5).setDepth(1000);
-
-  scene.time.delayedCall(2000, () => toast.destroy());
-}
-
-private static fallbackCopyTextToClipboard(text: string) {
-    const input = document.createElement("input");
-    input.value = text;
-    input.readOnly = true;
-    input.style.position = "fixed";
-    input.style.opacity = "0";
-    input.style.top = "0";
-    input.style.left = "0";
-    input.style.pointerEvents = "none";
-
-    document.body.appendChild(input);
-    input.select();
-
-    try {
-      document.execCommand("copy");
-      console.log("Copiado (fallback)");
-    } catch (err) {
-      console.error("Error al copiar (fallback)", err);
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(text);
+                showNotification("¡Código copiado!");
+            } else {
+                this.fallbackCopyTextToClipboard(text);
+                showNotification("¡Código copiado!");
+            }
+        } catch (err) {
+            console.error("Error al copiar al portapapeles:", err);
+            showNotification("Error al copiar el código", "#ff0000");
+        }
     }
 
-    document.body.removeChild(input);
-  }
-  private static handleCopyCode(scene: Phaser.Scene) {
-    const code = (scene.game as Game).selectedCoupon;
+    private static fallbackCopyTextToClipboard(text: string): void {
+        const input = document.createElement("input");
+        input.value = text;
+        input.style.position = "fixed";
+        input.style.opacity = "0";
+        input.style.pointerEvents = "none";
+        document.body.appendChild(input);
 
-    if (ButtonEventHandler.isIOS()) {
-      // Crea el input y dispara su click directamente
-      ButtonEventHandler.copyInputValueManually("couponInput", scene);
-      const input = document.getElementById("couponInput") as HTMLInputElement;
-      console.log("ios precionado");
-      alert("ios")
-      input.click(); // 👈 fuerza el click = selecciona y copia
-    } else {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        console.log("2do else");
-        alert("android")
-         const input = document.getElementById("couponInput") as HTMLInputElement;
-      input.click(); // 👈 fuerza el click = selecciona y copia
-      } else {
-        console.log("3er else");
-        ButtonEventHandler.fallbackCopyTextToClipboard(code);
-      }
+        // Seleccionar texto
+        input.select();
+        input.setSelectionRange(0, 99999); // Para compatibilidad con móviles
+
+        try {
+            document.execCommand("copy");
+            console.log("Texto copiado (fallback)");
+        } catch (err) {
+            console.error("Error al copiar (fallback):", err);
+        } finally {
+            document.body.removeChild(input);
+        }
     }
-  }
+
+    private static handleCopyCode(scene: Phaser.Scene): void {
+        const code = (scene.game as Game).selectedCoupon ?? "";
+        if (!code) {
+            console.warn("No hay código para copiar");
+            // Mostrar notificación en la escena
+            const notification = scene.add.text(
+                scene.cameras.main.centerX,
+                scene.cameras.main.centerY,
+                "No hay código disponible",
+                { fontSize: "24px", color: "#ff0000", align: "center" }
+            ).setOrigin(0.5);
+            scene.time.delayedCall(2000, () => notification.destroy());
+            return;
+        }
+
+        // Copiar el código al portapapeles
+        this.copyToClipboard(code, scene);
+    }
 }
