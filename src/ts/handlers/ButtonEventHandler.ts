@@ -72,10 +72,9 @@ export class ButtonEventHandler {
   if (isIOS) {
     const btn = document.getElementById("copyHiddenBtn") as HTMLButtonElement;
     if (btn) {
-      btn.focus(); // puede ayudar a iOS
-      btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Simula un clic en el botón oculto
+      btn.click();
     }
-    alert("Toca el botón amarillo 'Copiar código' para copiar el cupón"); // ayuda visual
   } else {
     // Copiado automático para no-iOS
     const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement;
