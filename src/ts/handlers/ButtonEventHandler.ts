@@ -89,88 +89,79 @@ private static fallbackCopyTextToClipboard(text: string) {
     document.body.removeChild(input);
   }
 
-private static copyToClipboard(value: string): boolean {
-  let input: HTMLInputElement | null = null;
-  let result: boolean | null = null;
+private static copyToClipboard(text: string, scene: Phaser.Scene): boolean {
+        const showNotification = (message: string, color: string = "#ffffff") => {
+            const notification = scene.add.text(
+                scene.cameras.main.centerX,
+                scene.cameras.main.centerY,
+                message,
+                { fontSize: "24px", color, align: "center" }
+            ).setOrigin(0.5);
+            scene.time.delayedCall(2000, () => notification.destroy());
+        };
 
-  try {
-    input = document.createElement('input');
-    input.setAttribute('readonly', 'true');
-    input.setAttribute('contenteditable', 'true');
-    input.style.position = 'fixed';
-    input.style.opacity = '0';
-    input.style.pointerEvents = 'none';
-    input.value = value;
+        let input: HTMLInputElement | null = null;
+        let result: boolean = false;
 
-    document.body.appendChild(input);
+        try {
+            // Crear un input temporal
+            input = document.createElement("input");
+            input.setAttribute("readonly", "true");
+            input.style.position = "fixed"; // Evitar desplazamiento en iOS
+            input.style.opacity = "0";
+            input.style.pointerEvents = "none";
+            input.value = text;
 
-    input.focus();
-    input.select();
+            document.body.appendChild(input);
 
-    // Extra: iOS necesita también esto
-    input.setSelectionRange(0, input.value.length);
+            // Enfocar y seleccionar el contenido
+            input.focus();
+            input.select();
 
-    result = document.execCommand('copy');
-  } catch (err) {
-    console.error(err);
-    result = null;
-  } finally {
-    if (input) {
-      document.body.removeChild(input);
+            // Selección manual para mayor compatibilidad con iOS
+            const range = document.createRange();
+            range.selectNodeContents(input);
+            const selection = window.getSelection();
+            if (selection) {
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+
+            input.setSelectionRange(0, input.value.length);
+            result = document.execCommand("copy");
+
+            if (result) {
+                showNotification("¡Código copiado!");
+            } else {
+                throw new Error("document.execCommand('copy') falló");
+            }
+        } catch (err) {
+            console.error("Error al copiar al portapapeles:", err);
+            showNotification("Error al copiar el código", "#ff0000");
+            result = false;
+        } finally {
+            if (input) {
+                document.body.removeChild(input);
+            }
+        }
+
+        return result;
     }
-  }
-
-  // Fallback manual
-  if (!result) {
-    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-    const copyHotkey = isMac ? '⌘C' : 'CTRL+C';
-    result = prompt(`Presioná ${copyHotkey} y luego Enter`, value) !== null;
-  }
-
-  return !!result;
-}
 
 
+    private static handleCopyCode(scene: Phaser.Scene): void {
+        const input = document.getElementById("couponInput") as HTMLInputElement | null;
+        if (!input || !input.value) {
+            const notification = scene.add.text(
+                scene.cameras.main.centerX,
+                scene.cameras.main.centerY,
+                "No hay código para copiar",
+                { fontSize: "24px", color: "#ff0000", align: "center" }
+            ).setOrigin(0.5);
+            scene.time.delayedCall(2000, () => notification.destroy());
+            return;
+        }
 
-  private static paraIOS(inputElement: HTMLInputElement) {
-    console.log("nueva accion");
-  inputElement.focus();
-  inputElement.select();
-
-  // Extra: por compatibilidad total
-  inputElement.setSelectionRange(0, 99999);
-
-  let success = false;
-
-  try {
-    success = document.execCommand("copy");
-  } catch (err) {
-    console.warn("Error al copiar (iOS):", err);
-  }
-}
-
-  private static handleCopyCode(scene: Phaser.Scene) {
-    const code = (scene.game as Game).selectedCoupon;
-
-    if (ButtonEventHandler.isIOS()) {
-      // Crea el input y dispara su click directamente
-      const input = document.getElementById("couponInput") as HTMLInputElement;
-      console.log("ios precionado");
-      alert("ios")
-      //input.click(); // 👈 fuerza el click = selecciona y copia
-      ButtonEventHandler.copyToClipboard(input.value);
-    } else {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        console.log("2do else");
-        const input = document.getElementById("couponInput") as HTMLInputElement;
-        ButtonEventHandler.copyToClipboard(input.value);
-        /*navigator.clipboard.writeText(code).catch(() => {
-          ButtonEventHandler.fallbackCopyTextToClipboard(code);
-        });*/
-      } else {
-        console.log("3er else");
-       /* ButtonEventHandler.fallbackCopyTextToClipboard(code);*/
-      }
+        this.copyToClipboard(input.value, scene);
     }
-  }
 }
