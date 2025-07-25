@@ -72,13 +72,18 @@ export class ButtonEventHandler {
   if (isIOS) {
     const btn = document.getElementById("copyHiddenBtn") as HTMLButtonElement;
     if (btn) {
+        alert("existe")
       // Simula un clic en el botón oculto
+      copy(btn.value)
       btn.click();
     }
   } else {
     // Copiado automático para no-iOS
     const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement;
-    if (textarea) {
+    console.log("mensaje");
+    console.log(textarea);
+    if (textarea.value) {
+        copy(textarea.value)
       textarea.focus();
       textarea.select();
       document.execCommand("copy");
