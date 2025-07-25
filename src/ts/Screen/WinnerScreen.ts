@@ -105,32 +105,43 @@ private setWinnerCouponCode() {
   });
 
   // ✅ Crear botón oculto para copiar si no existe
-  if (!document.getElementById("copyHiddenBtn")) {
+    if (!document.getElementById("copyHiddenBtn")) {
     const btn = document.createElement("button");
     btn.id = "copyHiddenBtn";
-    btn.innerText = "Copy";
+    btn.innerText = "Copiar código";
     btn.style.position = "absolute";
-    btn.style.opacity = "0";
-    btn.style.pointerEvents = "none";
-    btn.style.left = "-9999px";
+    btn.style.top = `${180}px`;
+    btn.style.zIndex = "9999";
+    btn.style.padding = "10px 20px";
+    btn.style.border = "none";
+    btn.style.borderRadius = "8px";
+    btn.style.background = "#e6c34d";
+    btn.style.color = "#000";
+    btn.style.fontSize = "18px";
+    btn.style.fontWeight = "bold";
+    btn.style.cursor = "pointer";
 
     btn.onclick = () => {
-      const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement;
-      if (!textarea) return;
+        const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement;
+        if (!textarea) return;
 
-      textarea.focus();
-      textarea.select();
+        textarea.focus();
+        textarea.select();
 
-      try {
+        try {
         const copied = document.execCommand("copy");
-        console.log("Copiado desde botón oculto:", copied);
-      } catch (e) {
-        console.warn("Error al copiar desde botón oculto", e);
-      }
+        if (copied) {
+            btn.innerText = "¡Copiado!";
+            setTimeout(() => btn.innerText = "Copiar código", 2000);
+        }
+        } catch (e) {
+        console.warn("Error al copiar en iOS", e);
+        }
     };
 
     document.body.appendChild(btn);
-  }
+    }
+
 
   document.body.appendChild(textarea);
 }
