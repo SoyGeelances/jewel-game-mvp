@@ -66,44 +66,39 @@ export class ButtonEventHandler {
             return /iPad|iPhone|iPod/.test(userAgent);
     }
 
-     private static handleCopyCode(scene: Phaser.Scene) {
-    const code = (scene.game as Game).selectedCoupon;
+ private static handleCopyCode(scene: Phaser.Scene) {
+  const isIOS = ButtonEventHandler.isIOS();
 
-    if (ButtonEventHandler.isIOS()) {
-      // Crea el input y dispara su click directamente
-      const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement | null;
-      console.log("ios precionado");
-      alert("ios")
-      //input.click(); // 👈 fuerza el click = selecciona y copia
-    const hiddenBtn = document.getElementById("copyHiddenBtn") as HTMLButtonElement | null;
-
-    if (!textarea || !hiddenBtn) {
-        console.warn("No se encontró textarea o botón oculto");
-        return;
+  if (isIOS) {
+    const btn = document.getElementById("copyHiddenBtn") as HTMLButtonElement;
+    if (btn) {
+      btn.focus(); // puede ayudar a iOS
+      btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+    alert("Toca el botón amarillo 'Copiar código' para copiar el cupón"); // ayuda visual
+  } else {
+    // Copiado automático para no-iOS
+    const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement;
+    if (textarea) {
+      textarea.focus();
+      textarea.select();
+      document.execCommand("copy");
 
-    // 🔥 Ejecutamos el click del botón oculto
-    hiddenBtn.click();
-    } else {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        console.log("2do else");
-            const hiddenBtn = document.getElementById("copyHiddenBtn") as HTMLButtonElement | null;
+      const toast = scene.add.text(
+        scene.scale.width / 2,
+        scene.scale.height - 40,
+        "¡Copiado!",
+        {
+          font: "18px Arial",
+          color: "#ffffff",
+          backgroundColor: "#000000",
+          padding: { left: 10, right: 10, top: 5, bottom: 5 },
+        }
+      ).setOrigin(0.5).setDepth(1000);
 
-    if (!hiddenBtn) {
-        console.warn("No se encontró textarea o botón oculto");
-        return;
-    }
-
-    // 🔥 Ejecutamos el click del botón oculto
-    hiddenBtn.click();
-        //ButtonEventHandler.copyToClipboard(textarea.value);
-        /*navigator.clipboard.writeText(code).catch(() => {
-          ButtonEventHandler.fallbackCopyTextToClipboard(code);
-        });*/
-      } else {
-        console.log("3er else");
-       /* ButtonEventHandler.fallbackCopyTextToClipboard(code);*/
-      }
+      scene.time.delayedCall(1500, () => toast.destroy());
     }
   }
+}
+
 }
