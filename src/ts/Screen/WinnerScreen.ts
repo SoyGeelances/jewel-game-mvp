@@ -108,14 +108,15 @@ private setWinnerCouponCode() {
     if (!document.getElementById("copyHiddenBtn")) {
     const btn = document.createElement("button");
     btn.id = "copyHiddenBtn";
-    btn.innerText = "Copiar código";
+    btn.innerText = ".";
     btn.style.position = "absolute";
+    btn.style.width = "216px";
     btn.style.top = `${180}px`;
     btn.style.zIndex = "9999";
     btn.style.padding = "10px 20px";
     btn.style.border = "none";
     btn.style.borderRadius = "8px";
-    btn.style.background = "#e6c34d";
+    btn.style.background = "rgb(253 208 208 / 0%)";
     btn.style.color = "#000";
     btn.style.fontSize = "18px";
     btn.style.fontWeight = "bold";
@@ -131,8 +132,7 @@ private setWinnerCouponCode() {
         try {
         const copied = document.execCommand("copy");
         if (copied) {
-            btn.innerText = "¡Copiado!";
-            setTimeout(() => btn.innerText = "Copiar código", 2000);
+            setTimeout(() => btn.innerText = ".", 2000);
         }
         } catch (e) {
         console.warn("Error al copiar en iOS", e);
