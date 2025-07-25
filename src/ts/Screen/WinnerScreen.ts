@@ -13,6 +13,7 @@ export class WinnerScreen  {
   private couponCodeContainer: Phaser.GameObjects.Image;
   private arcorCoin: Phaser.GameObjects.Image;
   private finalScore: Phaser.GameObjects.Text;
+  private actionButtons: Phaser.GameObjects.GameObject[] = [];
   eventObserver: EventObserver;
 
   constructor( scene: Phaser.Scene ) {
@@ -28,6 +29,7 @@ export class WinnerScreen  {
     this.prompt.setBackground(promptType, 0, 80, 1.1, 1.1); 
     this.prompt.setTitle(promptContent.title, 0, -105, 1, 1);
     this.setWinnerScore();
+    this.actionButtons = this.prompt.setActions(promptContent.actions, 0, 150, 55, 1, 1);
     this.setMessageWinner();
     this.setWinnerCouponCode();
     this.prompt.setActions(promptContent.actions, 0, 150, 55, 1, 1);
@@ -41,7 +43,6 @@ export class WinnerScreen  {
 		if (buttonId == 'copy') {
             const copyButtons = this.prompt.setActions([buttons.copied], 0, 150, 55, 1, 1);
             copyButtons.forEach(applyButtonHoverEffect); 
-
         }
 
         setTimeout(() => {
@@ -108,39 +109,53 @@ private setWinnerCouponCode() {
     if (!document.getElementById("copyHiddenBtn")) {
     const btn = document.createElement("button");
     btn.id = "copyHiddenBtn";
-    btn.innerText = ".";
+    btn.innerText = "";
     btn.style.position = "absolute";
     btn.style.width = "216px";
-    btn.style.top = `${180}px`;
-    btn.style.zIndex = "9999";
-    btn.style.padding = "10px 20px";
-    btn.style.border = "none";
-    btn.style.borderRadius = "8px";
-    btn.style.background = "rgb(253 208 208 / 0%)";
-    btn.style.color = "#000";
-    btn.style.fontSize = "18px";
-    btn.style.fontWeight = "bold";
-    btn.style.cursor = "pointer";
 
-    btn.onclick = () => {
-        const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement;
-        if (!textarea) return;
+  // Obtener coordenadas del botón Phaser
+  const canvasRect = this.scene.game.canvas.getBoundingClientRect();
+const firstBtn = this.actionButtons[0] as Phaser.GameObjects.Image | Phaser.GameObjects.Text;
+const bounds = firstBtn.getBounds(); // obtiene posición y tamaño reales
+const btnCenterX = canvasRect.left + bounds.centerX * (canvasRect.width / this.scene.game.scale.width);
+const btnCenterY = canvasRect.top + bounds.centerY * (canvasRect.height / this.scene.game.scale.height);
 
-        textarea.focus();
-        textarea.select();
 
-        try {
-        const copied = document.execCommand("copy");
-        if (copied) {
-            setTimeout(() => btn.innerText = ".", 2000);
-        }
-        } catch (e) {
-        console.warn("Error al copiar en iOS", e);
-        }
-    };
 
-    document.body.appendChild(btn);
+btn.style.left = `${btnCenterX}px`;
+btn.style.top = `${btnCenterY}px`;
+btn.style.transform = "translate(-50%, -50%)"; // lo centra visualmente
+btn.style.height= "49px";
+  btn.style.zIndex = "9999";
+  btn.style.padding = "10px 20px";
+  btn.style.border = "none";
+  btn.style.borderRadius = "8px";
+  btn.style.background = "rgb(255 114 114 / 7%)";
+  btn.style.color = "#000";
+  btn.style.fontSize = "18px";
+  btn.style.fontWeight = "bold";
+  btn.style.cursor = "pointer";
+
+  btn.onclick = () => {
+    const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement;
+    if (!textarea) return;
+
+    textarea.focus();
+    textarea.select();
+
+    try {
+      const copied = document.execCommand("copy");
+      if (copied) {
+        setTimeout(() => btn.innerText = "copiado", 2000);
+      }
+    } catch (e) {
+      console.warn("Error al copiar en iOS", e);
     }
+  };
+
+  document.body.appendChild(btn);
+}
+
 
 
   document.body.appendChild(textarea);

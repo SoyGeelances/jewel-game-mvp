@@ -68,41 +68,11 @@ export class ButtonEventHandler {
 
  private static handleCopyCode(scene: Phaser.Scene) {
   const isIOS = ButtonEventHandler.isIOS();
-
-  if (isIOS) {
-    const btn = document.getElementById("copyHiddenBtn") as HTMLButtonElement;
-    if (btn) {
-        alert("existe")
-      // Simula un clic en el botón oculto
-      copy(btn.value)
-      btn.click();
+   /* const btn = document.getElementById("copyHiddenBtn") as HTMLButtonElement;
+        if (btn) {
+            // Simula un clic en el botón oculto
+            copy(btn.value)
+            btn.click();
+        }*/
     }
-  } else {
-    // Copiado automático para no-iOS
-    const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement;
-    console.log("mensaje");
-    console.log(textarea);
-    if (textarea.value) {
-        copy(textarea.value)
-      textarea.focus();
-      textarea.select();
-      document.execCommand("copy");
-
-      const toast = scene.add.text(
-        scene.scale.width / 2,
-        scene.scale.height - 40,
-        "¡Copiado!",
-        {
-          font: "18px Arial",
-          color: "#ffffff",
-          backgroundColor: "#000000",
-          padding: { left: 10, right: 10, top: 5, bottom: 5 },
-        }
-      ).setOrigin(0.5).setDepth(1000);
-
-      scene.time.delayedCall(1500, () => toast.destroy());
-    }
-  }
-}
-
 }
