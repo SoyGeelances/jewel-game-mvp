@@ -89,7 +89,7 @@ private static fallbackCopyTextToClipboard(text: string) {
     document.body.removeChild(input);
   }
 
-    private static async copyToClipboard(text: string, scene: Phaser.Scene): Promise<boolean> {
+    private static async copyToClipboard(text: string): Promise<boolean> {
   let textarea;
   let result;
 
@@ -133,19 +133,28 @@ private static fallbackCopyTextToClipboard(text: string) {
   return true;
 }
 
-    private static handleCopyCode(scene: Phaser.Scene): void {
+    private static handleCopyCode(scene: Phaser.Scene) {
+    const code = (scene.game as Game).selectedCoupon;
+    
+    if (ButtonEventHandler.isIOS()) {
+      // Crea el input y dispara su click directamente
+      const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement | null;
+      console.log("ios precionado");
+      alert("ios")
+      //input.click(); // 👈 fuerza el click = selecciona y copia
+      ButtonEventHandler.copyToClipboard(textarea.value);
+    } else {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        console.log("2do else");
         const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement | null;
-        if (!textarea || !textarea.value) {
-            const notification = scene.add.text(
-                scene.cameras.main.centerX,
-                scene.cameras.main.centerY,
-                "No hay código para copiar",
-                { fontSize: "24px", color: "#ff0000", align: "center" }
-            ).setDepth(55555).setOrigin(0.5);
-            scene.time.delayedCall(2000, () => notification.destroy());
-            return;
-        }
-
-        this.copyToClipboard(textarea.value, scene);
+        ButtonEventHandler.copyToClipboard(textarea.value);
+        /*navigator.clipboard.writeText(code).catch(() => {
+          ButtonEventHandler.fallbackCopyTextToClipboard(code);
+        });*/
+      } else {
+        console.log("3er else");
+       /* ButtonEventHandler.fallbackCopyTextToClipboard(code);*/
+      }
     }
+  }
 }
