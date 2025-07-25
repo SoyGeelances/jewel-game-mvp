@@ -89,7 +89,7 @@ private static fallbackCopyTextToClipboard(text: string) {
     document.body.removeChild(input);
   }
 
-private static copyToClipboard(text: string, scene: Phaser.Scene): boolean {
+    private static async copyToClipboard(text: string, scene: Phaser.Scene): Promise<boolean> {
         const showNotification = (message: string, color: string = "#ffffff") => {
             const notification = scene.add.text(
                 scene.cameras.main.centerX,
@@ -100,34 +100,44 @@ private static copyToClipboard(text: string, scene: Phaser.Scene): boolean {
             scene.time.delayedCall(2000, () => notification.destroy());
         };
 
-        let input: HTMLInputElement | null = null;
+        // Intentar con navigator.clipboard
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showNotification("¡Código copiado!");
+                return true;
+            } catch (err) {
+                console.error("Error al copiar con navigator.clipboard:", err);
+            }
+        }
+
+        // Fallback con textarea
+        let textarea: HTMLTextAreaElement | null = null;
         let result: boolean = false;
 
         try {
-            // Crear un input temporal
-            input = document.createElement("input");
-            input.setAttribute("readonly", "true");
-            input.style.position = "fixed"; // Evitar desplazamiento en iOS
-            input.style.opacity = "0";
-            input.style.pointerEvents = "none";
-            input.value = text;
+            textarea = document.createElement("textarea");
+            textarea.setAttribute("readonly", "true");
+            textarea.setAttribute("contenteditable", "true");
+            textarea.style.position = "fixed";
+            textarea.style.opacity = "0";
+            textarea.style.pointerEvents = "none";
+            textarea.value = text;
 
-            document.body.appendChild(input);
+            document.body.appendChild(textarea);
 
-            // Enfocar y seleccionar el contenido
-            input.focus();
-            input.select();
+            textarea.focus();
+            textarea.select();
 
-            // Selección manual para mayor compatibilidad con iOS
             const range = document.createRange();
-            range.selectNodeContents(input);
+            range.selectNodeContents(textarea);
             const selection = window.getSelection();
             if (selection) {
                 selection.removeAllRanges();
                 selection.addRange(range);
             }
 
-            input.setSelectionRange(0, input.value.length);
+            textarea.setSelectionRange(0, textarea.value.length);
             result = document.execCommand("copy");
 
             if (result) {
@@ -140,28 +150,27 @@ private static copyToClipboard(text: string, scene: Phaser.Scene): boolean {
             showNotification("Error al copiar el código", "#ff0000");
             result = false;
         } finally {
-            if (input) {
-                document.body.removeChild(input);
+            if (textarea) {
+                document.body.removeChild(textarea);
             }
         }
 
         return result;
     }
 
-
     private static handleCopyCode(scene: Phaser.Scene): void {
-        const input = document.getElementById("couponInput") as HTMLInputElement | null;
-        if (!input || !input.value) {
+        const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement | null;
+        if (!textarea || !textarea.value) {
             const notification = scene.add.text(
                 scene.cameras.main.centerX,
                 scene.cameras.main.centerY,
                 "No hay código para copiar",
                 { fontSize: "24px", color: "#ff0000", align: "center" }
-            ).setOrigin(0.5);
+            ).setDepth(55555).setOrigin(0.5);
             scene.time.delayedCall(2000, () => notification.destroy());
             return;
         }
 
-        this.copyToClipboard(input.value, scene);
+        this.copyToClipboard(textarea.value, scene);
     }
 }
