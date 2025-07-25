@@ -65,6 +65,18 @@
   </head>
   <body>
     <!-- Google Tag Manager (noscript) -->
+    <div style="display: flex;justify-content: center;"><input type="text" id="couponTextarea" value="Código123" readonly>
+<button onclick="copy()">Copy</button></div>
+    
+
+<script>
+  function copy() {
+    const textarea = document.getElementById('couponTextarea');
+    textarea.select();
+    const success = document.execCommand('copy');
+    console.log(success ? 'copiado' : 'falló');
+  }
+</script>
     <noscript
       ><iframe
         src="https://www.googletagmanager.com/ns.html?id=GTM-KT94S84N"
