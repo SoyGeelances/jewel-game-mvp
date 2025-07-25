@@ -90,73 +90,48 @@ private static fallbackCopyTextToClipboard(text: string) {
   }
 
     private static async copyToClipboard(text: string, scene: Phaser.Scene): Promise<boolean> {
-        const showNotification = (message: string, color: string = "#ffffff") => {
-            const notification = scene.add.text(
-                scene.cameras.main.centerX,
-                scene.cameras.main.centerY,
-                message,
-                { fontSize: "24px", color, align: "center" }
-            ).setDepth(55555).setOrigin(0.5);
-            scene.time.delayedCall(2000, () => notification.destroy());
-        };
+  let textarea;
+  let result;
 
-        // Intentar con navigator.clipboard
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            try {
-                await navigator.clipboard.writeText(text);
-                showNotification("¡Código copiado!");
-                return true;
-            } catch (err) {
-                console.error("Error al copiar con navigator.clipboard:", err);
-            }
-        }
+  try {
+    textarea = document.createElement('textarea');
+    textarea.setAttribute('readonly', true);
+    textarea.setAttribute('contenteditable', true);
+    textarea.style.position = 'fixed'; // prevent scroll from jumping to the bottom when focus is set.
+    textarea.value = text;
 
-        // Fallback con textarea
-        let textarea: HTMLTextAreaElement | null = null;
-        let result: boolean = false;
+    document.body.appendChild(textarea);
 
-        try {
-            textarea = document.createElement("textarea");
-            textarea.setAttribute("readonly", "true");
-            textarea.setAttribute("contenteditable", "true");
-            textarea.style.position = "fixed";
-            textarea.style.opacity = "0";
-            textarea.style.pointerEvents = "none";
-            textarea.value = text;
+    textarea.focus();
+    textarea.select();
 
-            document.body.appendChild(textarea);
+    const range = document.createRange();
+    range.selectNodeContents(textarea);
 
-            textarea.focus();
-            textarea.select();
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
 
-            const range = document.createRange();
-            range.selectNodeContents(textarea);
-            const selection = window.getSelection();
-            if (selection) {
-                selection.removeAllRanges();
-                selection.addRange(range);
-            }
+    textarea.setSelectionRange(0, textarea.value.length);
+    result = document.execCommand('copy');
+  } catch (err) {
+    console.error(err);
+    result = null;
+  } finally {
+    document.body.removeChild(textarea);
+  }
 
-            textarea.setSelectionRange(0, textarea.value.length);
-            result = document.execCommand("copy");
-
-            if (result) {
-                showNotification("¡Código copiado!");
-            } else {
-                throw new Error("document.execCommand('copy') falló");
-            }
-        } catch (err) {
-            console.error("Error al copiar al portapapeles:", err);
-            showNotification("Error al copiar el código", "#ff0000");
-            result = false;
-        } finally {
-            if (textarea) {
-                document.body.removeChild(textarea);
-            }
-        }
-
-        return result;
+  // manual copy fallback using prompt
+  if (!result) {
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const copyHotkey = isMac ? '⌘C' : 'CTRL+C';
+    result = prompt(`Press ${copyHotkey}`, text); // eslint-disable-line no-alert
+    if (!result) {
+      return false;
     }
+  }
+  return true;
+}
 
     private static handleCopyCode(scene: Phaser.Scene): void {
         const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement | null;
