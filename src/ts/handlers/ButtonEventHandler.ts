@@ -89,15 +89,15 @@ private static fallbackCopyTextToClipboard(text: string) {
     document.body.removeChild(input);
   }
 
-    private static async copyToClipboard(text: string): Promise<boolean> {
+private static async copyToClipboard(text: string): Promise<boolean> {
   let textarea;
   let result;
 
   try {
     textarea = document.createElement('textarea');
     textarea.setAttribute('readonly', true);
-    textarea.setAttribute('contenteditable', true);
-    textarea.style.position = 'fixed'; // prevent scroll from jumping to the bottom when focus is set.
+    textarea.setAttribute('contenteditable', 'true');
+    textarea.style.position = 'fixed';
     textarea.value = text;
 
     document.body.appendChild(textarea);
@@ -115,46 +115,56 @@ private static fallbackCopyTextToClipboard(text: string) {
     textarea.setSelectionRange(0, textarea.value.length);
     result = document.execCommand('copy');
   } catch (err) {
-    console.error(err);
+    console.error('Error en copyToClipboard:', err);
     result = null;
   } finally {
-    document.body.removeChild(textarea);
-  }
-
-  // manual copy fallback using prompt
-  if (!result) {
-    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-    const copyHotkey = isMac ? '⌘C' : 'CTRL+C';
-    result = prompt(`Press ${copyHotkey}`, text); // eslint-disable-line no-alert
-    if (!result) {
-      return false;
+    if (textarea) {
+      document.body.removeChild(textarea);
     }
   }
+
+  // fallback solo si el método anterior falla
+  if (!result) {
+    console.warn('Fallo execCommand, mostrando prompt manual');
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const copyHotkey = isMac ? '⌘C' : 'CTRL+C';
+    const fallback = prompt(`Presiona ${copyHotkey} para copiar`, text);
+    return !!fallback;
+  }
+
   return true;
 }
 
-    private static handleCopyCode(scene: Phaser.Scene) {
-    const code = (scene.game as Game).selectedCoupon;
-    
-    if (ButtonEventHandler.isIOS()) {
-      // Crea el input y dispara su click directamente
-      const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement | null;
-      console.log("ios precionado");
-      alert("ios")
-      //input.click(); // 👈 fuerza el click = selecciona y copia
-      ButtonEventHandler.copyToClipboard(textarea.value);
+private static async handleCopyCode(scene: Phaser.Scene) {
+  const code = (scene.game as Game).selectedCoupon;
+  const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement | null;
+
+  if (!textarea || !textarea.value) {
+    console.warn("No se encontró el textarea o está vacío");
+    return;
+  }
+
+  const textToCopy = textarea.value;
+
+  try {
+    // API moderna
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(textToCopy);
+      console.log("Texto copiado con clipboard API");
     } else {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        console.log("2do else");
-        const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement | null;
-        ButtonEventHandler.copyToClipboard(textarea.value);
-        /*navigator.clipboard.writeText(code).catch(() => {
-          ButtonEventHandler.fallbackCopyTextToClipboard(code);
-        });*/
-      } else {
-        console.log("3er else");
-       /* ButtonEventHandler.fallbackCopyTextToClipboard(code);*/
+      const success = await ButtonEventHandler.copyToClipboard(textToCopy);
+      if (!success) {
+        console.warn("Fallo el copiado incluso con fallback");
       }
     }
+  } catch (err) {
+    console.error("Error intentando copiar:", err);
+    // fallback
+    const success = await ButtonEventHandler.copyToClipboard(textToCopy);
+    if (!success) {
+      console.warn("Fallo el fallback también");
+    }
   }
+}
+
 }
