@@ -96,7 +96,7 @@ private static copyToClipboard(text: string, scene: Phaser.Scene): boolean {
                 scene.cameras.main.centerY,
                 message,
                 { fontSize: "24px", color, align: "center" }
-            ).setOrigin(0.5);
+            ).setDepth(55555).setOrigin(0.5);
             scene.time.delayedCall(2000, () => notification.destroy());
         };
 
