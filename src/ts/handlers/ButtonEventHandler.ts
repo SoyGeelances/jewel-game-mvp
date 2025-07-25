@@ -65,106 +65,45 @@ export class ButtonEventHandler {
         const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
             return /iPad|iPhone|iPod/.test(userAgent);
     }
-private static fallbackCopyTextToClipboard(text: string) {
-    const input = document.createElement("input");
-    input.value = text;
-    input.readOnly = true;
-    input.style.position = "fixed";
-    input.style.opacity = "0";
-    input.style.top = "0";
-    input.style.left = "0";
-    input.style.pointerEvents = "none";
 
-    document.body.appendChild(input);
-    input.select();
- console.log(input.value);
-    try {
-       
-      document.execCommand("copy");
-      console.log("Copiado (fallback)");
-    } catch (err) {
-      console.error("Error al copiar (fallback)", err);
+     private static handleCopyCode(scene: Phaser.Scene) {
+    const code = (scene.game as Game).selectedCoupon;
+
+    if (ButtonEventHandler.isIOS()) {
+      // Crea el input y dispara su click directamente
+      const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement | null;
+      console.log("ios precionado");
+      alert("ios")
+      //input.click(); // 👈 fuerza el click = selecciona y copia
+    const hiddenBtn = document.getElementById("copyHiddenBtn") as HTMLButtonElement | null;
+
+    if (!textarea || !hiddenBtn) {
+        console.warn("No se encontró textarea o botón oculto");
+        return;
     }
 
-    document.body.removeChild(input);
-  }
-
-private static async copyToClipboard(text: string): Promise<boolean> {
-  let textarea;
-  let result;
-
-  try {
-    textarea = document.createElement('textarea');
-    textarea.setAttribute('readonly', true);
-    textarea.setAttribute('contenteditable', 'true');
-    textarea.style.position = 'fixed';
-    textarea.value = text;
-
-    document.body.appendChild(textarea);
-
-    textarea.focus();
-    textarea.select();
-
-    const range = document.createRange();
-    range.selectNodeContents(textarea);
-
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-
-    textarea.setSelectionRange(0, textarea.value.length);
-    result = document.execCommand('copy');
-  } catch (err) {
-    console.error('Error en copyToClipboard:', err);
-    result = null;
-  } finally {
-    if (textarea) {
-      document.body.removeChild(textarea);
-    }
-  }
-
-  // fallback solo si el método anterior falla
-  if (!result) {
-    console.warn('Fallo execCommand, mostrando prompt manual');
-    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-    const copyHotkey = isMac ? '⌘C' : 'CTRL+C';
-    const fallback = prompt(`Presiona ${copyHotkey} para copiar`, text);
-    return !!fallback;
-  }
-
-  return true;
-}
-
-private static async handleCopyCode(scene: Phaser.Scene) {
-  const code = (scene.game as Game).selectedCoupon;
-  const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement | null;
-
-  if (!textarea || !textarea.value) {
-    console.warn("No se encontró el textarea o está vacío");
-    return;
-  }
-
-  const textToCopy = textarea.value;
-
-  try {
-    // API moderna
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(textToCopy);
-      console.log("Texto copiado con clipboard API");
+    // 🔥 Ejecutamos el click del botón oculto
+    hiddenBtn.click();
     } else {
-      const success = await ButtonEventHandler.copyToClipboard(textToCopy);
-      if (!success) {
-        console.warn("Fallo el copiado incluso con fallback");
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        console.log("2do else");
+            const hiddenBtn = document.getElementById("copyHiddenBtn") as HTMLButtonElement | null;
+
+    if (!hiddenBtn) {
+        console.warn("No se encontró textarea o botón oculto");
+        return;
+    }
+
+    // 🔥 Ejecutamos el click del botón oculto
+    hiddenBtn.click();
+        //ButtonEventHandler.copyToClipboard(textarea.value);
+        /*navigator.clipboard.writeText(code).catch(() => {
+          ButtonEventHandler.fallbackCopyTextToClipboard(code);
+        });*/
+      } else {
+        console.log("3er else");
+       /* ButtonEventHandler.fallbackCopyTextToClipboard(code);*/
       }
     }
-  } catch (err) {
-    console.error("Error intentando copiar:", err);
-    // fallback
-    const success = await ButtonEventHandler.copyToClipboard(textToCopy);
-    if (!success) {
-      console.warn("Fallo el fallback también");
-    }
   }
-}
-
 }

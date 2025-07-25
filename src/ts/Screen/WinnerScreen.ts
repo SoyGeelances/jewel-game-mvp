@@ -77,12 +77,12 @@ private setWinnerCouponCode() {
   const existing = document.getElementById("couponTextarea");
   if (existing) existing.remove();
 
+  // Crear textarea oculto con el código
   const textarea = document.createElement("textarea");
   textarea.value = code;
   textarea.readOnly = true;
   textarea.id = "couponTextarea";
 
-  // Estilo visual (idéntico al que usabas)
   Object.assign(textarea.style, {
     position: "absolute",
     top: `${this.scene.scale.canvas.offsetTop + this.scene.cameras.main.centerY + 80}px`,
@@ -91,7 +91,6 @@ private setWinnerCouponCode() {
     fontSize: "23px",
     lineHeight: "23px",
     fontFamily: "'Luckiest Guy', sans-serif",
-    fontWeight: "normal",
     color: "#ffffff",
     backgroundColor: "#294256",
     border: "none",
@@ -100,39 +99,42 @@ private setWinnerCouponCode() {
     textAlign: "center",
     zIndex: "9999",
     pointerEvents: "auto",
-    textShadow: "none",
-    WebkitTextStroke: "0",
     outline: "none",
-    boxShadow: "none",
-    height: "auto",
     resize: "none",
     boxSizing: "border-box",
   });
 
-  textarea.onclick = () => {
-    textarea.focus();
-    textarea.select();
+  // ✅ Crear botón oculto para copiar si no existe
+  if (!document.getElementById("copyHiddenBtn")) {
+    const btn = document.createElement("button");
+    btn.id = "copyHiddenBtn";
+    btn.innerText = "Copy";
+    btn.style.position = "absolute";
+    btn.style.opacity = "0";
+    btn.style.pointerEvents = "none";
+    btn.style.left = "-9999px";
 
-    try {
-      const copied = document.execCommand("copy");
+    btn.onclick = () => {
+      const textarea = document.getElementById("couponTextarea") as HTMLTextAreaElement;
+      if (!textarea) return;
 
-      const msg = copied ? "¡Copiado!" : "No se pudo copiar";
+      textarea.focus();
+      textarea.select();
 
-      const toast = this.scene.add.text(this.scene.scale.width / 2, this.scene.scale.height - 40, msg, {
-        font: "18px Arial",
-        color: "#ffffff",
-        backgroundColor: "#000000",
-        padding: { left: 10, right: 10, top: 5, bottom: 5 },
-      }).setOrigin(0.5).setDepth(1000);
+      try {
+        const copied = document.execCommand("copy");
+        console.log("Copiado desde botón oculto:", copied);
+      } catch (e) {
+        console.warn("Error al copiar desde botón oculto", e);
+      }
+    };
 
-      this.scene.time.delayedCall(1500, () => toast.destroy());
-    } catch (e) {
-      console.warn("Copiado falló", e);
-    }
-  };
+    document.body.appendChild(btn);
+  }
 
   document.body.appendChild(textarea);
 }
+
 
 
     private setMessageWinner() {
