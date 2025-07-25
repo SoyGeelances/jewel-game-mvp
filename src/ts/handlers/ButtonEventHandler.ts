@@ -66,13 +66,7 @@ export class ButtonEventHandler {
             return /iPad|iPhone|iPod/.test(userAgent);
     }
 
- private static handleCopyCode(scene: Phaser.Scene) {
-  const isIOS = ButtonEventHandler.isIOS();
-   /* const btn = document.getElementById("copyHiddenBtn") as HTMLButtonElement;
-        if (btn) {
-            // Simula un clic en el botón oculto
-            copy(btn.value)
-            btn.click();
-        }*/
+    private static handleCopyCode(scene: Phaser.Scene) {
+    /*logica pasada a winnerScreen.ts*/
     }
 }
