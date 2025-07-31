@@ -22,8 +22,16 @@ const LOGO_Y = 25;
 
 // LEVELS
 const LEVELS = [
-  { level: 1, goal: 30, time: 25 },
-
+  { level: 1, goal: 300, time: 25 },
+  { level: 2, goal: 800, time: 28 },
+  { level: 3, goal: 1500, time: 31 },
+  { level: 4, goal: 2500, time: 34 },
+  { level: 5, goal: 3700, time: 37 },
+  { level: 6, goal: 5000, time: 40 },
+  { level: 7, goal: 6400, time: 43 },
+  { level: 8, goal: 7800, time: 46 },
+  { level: 9, goal: 9000, time: 48 },
+  { level: 10, goal: 10000, time: 50 }
 ];
 
 export default class MainGame extends Phaser.Scene {
@@ -134,7 +142,7 @@ export default class MainGame extends Phaser.Scene {
 
   private trySwap(direction: 'up' | 'down' | 'left' | 'right') {
     if (!this.selectedCandy || this.movingCandiesInProcess) return;
-    console.log("triyng swap");
+    //console.log("triyng swap");
 
     const row = this.selectedCandy.getData('row');
     const col = this.selectedCandy.getData('col');
@@ -151,14 +159,14 @@ export default class MainGame extends Phaser.Scene {
 
     // Fuera de límites
     if ( targetRow < 0 || targetRow >= GRID_HEIGHT || targetCol < 0 || targetCol >= GRID_WIDTH ) {
-        console.log("fuera de limites");
+        //console.log("fuera de limites");
         this.selectedCandy.setScale(0.6); 
         return;
     }
 
     const areAdjacent = this.grid[targetRow][targetCol];
     if (!areAdjacent) {
-        console.log("es adjacente");
+        //console.log("es adjacente");
         this.selectedCandy.setScale(0.6); 
         return;
     }
@@ -209,16 +217,27 @@ export default class MainGame extends Phaser.Scene {
             await this.refillGrid();
             await this.processMatches(); // 🔁 encadenar combos
         } else {
-        // Si no hay match, revertir
-        this.tweens.add({ targets: c1, x: c2.x, y: c2.y, duration: 200 });
-        this.tweens.add({ targets: c2, x: c1.x, y: c1.y, duration: 200 });
-        this.grid[row1][col1] = c1;
-        this.grid[row2][col2] = c2;
-        c1.setData('row', row1).setData('col', col1);
-        c2.setData('row', row2).setData('col', col2);
-        }
+        this.tweens.add({
+                targets: c1,
+                x: c2.x,
+                y: c2.y,
+                duration: 200
+            });
 
-        this.movingCandiesInProcess = false;
+            this.tweens.add({
+                targets: c2,
+                x: c1.x,
+                y: c1.y,
+                duration: 200,
+                onComplete: () => {
+                    this.grid[row1][col1] = c1;
+                    this.grid[row2][col2] = c2;
+                    c1.setData('row', row1).setData('col', col1);
+                    c2.setData('row', row2).setData('col', col2);
+                    this.movingCandiesInProcess = false; 
+                }
+            });
+        }
     });
   }
 
@@ -375,9 +394,7 @@ export default class MainGame extends Phaser.Scene {
 
     if (this.scoreValue >= this.scoreGoal) {
         this.winnerScreen.show(prompt.win, "winner_screen");
-        console.log('WIN');
     } else {
-        console.log('ELSE');
         this.retryScreen.setFinalScore(this.scoreValue);
         this.retryScreen.show(prompt.retry, "prompt_screen");
     }
@@ -386,7 +403,7 @@ export default class MainGame extends Phaser.Scene {
   private removeMatches(matches: Phaser.GameObjects.Sprite[]) {
     //this.matchSound.play()
     //console.log("matches: ", matches);
-    console.log("removematches");
+    //console.log("removematches");
 
     // Calcular Combos
     const basePoints = matches.length * 10;
@@ -477,7 +494,7 @@ export default class MainGame extends Phaser.Scene {
   }
 
   private dropCandies() {
-    console.log("droppcandies");
+    //console.log("droppcandies");
     if (this.gameState !== 'playing') return;
     for (let col = 0; col < GRID_WIDTH; col++) {
         for (let row = GRID_HEIGHT - 1; row >= 0; row--) {
@@ -508,7 +525,7 @@ export default class MainGame extends Phaser.Scene {
   }
 
   private refillGrid(): Promise<void> {
-    console.log("reffill");
+    //console.log("reffill");
 
     this.movingCandiesInProcess = true; //Bloquear movimientos
 

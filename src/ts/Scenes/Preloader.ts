@@ -22,29 +22,26 @@ export default class Preloader extends Phaser.Scene {
 		//this.load.image("powerBy", "powerBy_w.png");
 		this.load.svg("powerBySvg", "powerBy_w.svg", {width:400, height:30, scale: 1});
 		this.load.svg("tevas_title", "tevas_title.svg");
-		//this.load.svg("retry_button", "retry_button.svg");
+		this.load.svg("retry_btn", "retry_btn.svg");
+        //this.load.image("retry_btn", "retry_btn.png");
         this.load.image("logo_mogul_color", "logo_mogul_color.svg");
         this.load.image("logo_mogul_white", "logo_mogul_white.svg");
         this.load.image('sparkle', 'sparkle_img.png');
         this.load.image('candy_glow', 'candy_glow_img.png');
         this.load.image('recarga_masti', 'recarga_masti.png');
-
 		this.load.image("phaser_pixel_medium_flat");
 		this.load.image("background", "background.png");
         this.load.image("background_main", "background_main.png");
         this.load.image('prompt_bg', 'background_main.png');
         this.load.image("combo_x5_mogul", "combo_x5_mogul.png");
-		
 		this.load.image("sound_off", "sound_off.png");
 		this.load.image("sound_on", "sound_on.png");
-		
 		this.load.image("score", "frame-score.png");
         this.load.image("ray_effect", "ray_effect.png");
 		this.load.image("final_score", "final_score.png");
 		this.load.image("prompt_screen", "prompt_screen.png");
-		this.load.image("retry_message", "cada-vez-mas-cerca.png");
+		this.load.image("retry_message", "cada-vez-mas-cerca.svg");
 		this.load.image("pause_btn", "pause_btn.png");
-		this.load.image("retry_btn", "retry_btn.png");
 		this.load.image("seguiintentando_title", "segui-intentando.png");
 		this.load.image("porpoco_title", "porpoco_title.png");
 		this.load.image("exit_arcor_button", "ir_a_tienda.png");

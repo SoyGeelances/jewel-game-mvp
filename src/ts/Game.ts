@@ -21,7 +21,7 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 
 export default class Game extends Phaser.Game {
 	onCloseGame?: () => void;
-	selectedCoupon: string = 'PRIMAVERA-5U5Y5';
+	selectedCoupon: string = 'TESTCUPONCANDYGAME';
 
 	constructor(config: Phaser.Types.Core.GameConfig & PhaserGameOptions) {
 		Utilities.LogSceneMethodEntry("Game", "constructor");
@@ -42,9 +42,7 @@ export default class Game extends Phaser.Game {
 
 	public getRandomCoupon() {
 		const coupons = [
-			'PRIMAVERA-096JB', 'PRIMAVERA-1YPLD', 'PRIMAVERA-2HBCV', 'PRIMAVERA-307TT',
-			'PRIMAVERA-4WXTB', 'PRIMAVERA-5U5Y5', 'PRIMAVERA-60ASF', 'PRIMAVERA-7P6DY',
-			'PRIMAVERA-8S8FJ4', 'PRIMAVERA-94X04'
+			'TESTCUPONCANDYGAME'
 		];
     const randomIndex = Math.floor(Math.random() * coupons.length);
     return coupons[randomIndex];
