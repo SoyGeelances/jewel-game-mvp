@@ -11,8 +11,8 @@ export class CloseButton {
 		this.scene = scene;
 	}
 
-	public create(deviationX = 0, deviationY = 4) {
-		const margin = 35;
+	public create(deviationX = 0, deviationY = 9) {
+		const margin = 28;
 		this.button = new Button(
 			this.scene,
 			this.scene.cameras.main.scrollX +

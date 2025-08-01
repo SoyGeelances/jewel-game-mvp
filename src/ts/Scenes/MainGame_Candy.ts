@@ -26,12 +26,12 @@ const LEVELS = [
   { level: 2, goal: 800, time: 28 },
   { level: 3, goal: 1500, time: 31 },
   { level: 4, goal: 2500, time: 34 },
-  { level: 5, goal: 3700, time: 37 },
+  { level: 5, goal: 3700, time: 40 },
   { level: 6, goal: 5000, time: 40 },
-  { level: 7, goal: 6400, time: 43 },
-  { level: 8, goal: 7800, time: 46 },
-  { level: 9, goal: 9000, time: 48 },
-  { level: 10, goal: 10000, time: 50 }
+  { level: 7, goal: 6400, time: 42 },
+  { level: 8, goal: 7800, time: 44 },
+  { level: 9, goal: 9000, time: 46 },
+  { level: 10, goal: 10000, time: 45 }
 ];
 
 export default class MainGame extends Phaser.Scene {
@@ -743,10 +743,10 @@ export default class MainGame extends Phaser.Scene {
         const scoreHeight = scoreImage.height;
 
         this.scoreText = this.add.text(20 + scoreWidth - 30, 17 + scoreHeight / 2, '0', {
-        fontFamily: 'Luckiest Guy',
-        fontSize: '40px',
-        color: '#FEC647',
-        fontStyle: 'bold',
+            fontFamily: 'Luckiest Guy',
+            fontSize: '40px',
+            color: '#FEC647',
+            fontStyle: 'bold',
         }).setOrigin(1, 0.5);
 
         this.closeButton.create();

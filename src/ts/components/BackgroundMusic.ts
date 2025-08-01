@@ -36,7 +36,7 @@ export class BackgroundMusic {
     // Si ya existe un botón activo, no lo volvemos a crear
     if (this.soundButton) return;
 
-    this.soundButton = scene.add.image(scene.scale.width - 15, 80, this.isMuted ? 'sound_off' : 'sound_on')
+    this.soundButton = scene.add.image(scene.scale.width - 9, 85, this.isMuted ? 'sound_off' : 'sound_on')
         .setOrigin(1, 0)
         .setScale(1)
         .setScrollFactor(0)
@@ -94,7 +94,7 @@ public recreateButton(scene: Phaser.Scene) {
 
   showMuteButton(scene: Phaser.Scene) {
     const iconKey = this.isMuted ? 'sound_off' : 'sound_on';
-    const btn = scene.add.image(scene.scale.width - 15, 84, iconKey)
+    const btn = scene.add.image(scene.scale.width - 9, 85, iconKey)
       .setOrigin(1, 0.5)
       .setInteractive()
       .setScale(1)

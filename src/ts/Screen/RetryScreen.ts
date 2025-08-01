@@ -18,10 +18,26 @@ export class RetryScreen  {
     this.prompt.addMask();
   }
 
-  show(promptContent: promptContentConfig, promptType: string) {
+  show(promptContent: promptContentConfig, promptType: string, showPromoText: boolean = true) {
     this.prompt.setBackground(promptType, 0, 0, 1, 1);
     this.prompt.setTitle(promptContent.title, 0, -115, 1, 1);
-    this.prompt.setMessage(promptContent.message, 0, -30, 1, 1);
+    if (showPromoText) {
+        this.scene.add.text(
+        this.scene.cameras.main.centerX,
+        this.scene.cameras.main.centerY - 30,
+        "Estás cada vez más cerca de tu\nCupón de Descuento 🎉",
+        {
+            fontFamily: 'Open Sans',
+            fontSize: '14px',
+            fontStyle: 'bold',
+            color: '#ffffff',
+            align: 'center',
+            lineSpacing: 4,
+        }
+        )
+        .setOrigin(0.5, 0.5)
+        .setDepth(11);
+    }
     this.prompt.setActions(promptContent.actions, 0, 25, 55, 1, 1);
     this.scene.sound.add('retry').play();
     Footer.create(this.scene);

@@ -54,7 +54,7 @@ export default class Preloader extends Phaser.Scene {
 		this.load.image("tevas_message", "tevas_message.png");
 		this.load.image("tevas_button", "tevas_button.png");
         this.load.image("goto_shop_btn", "goto_shop_btn.png");
-		this.load.image("copy_coupon_button", "copy_coupon_button.png");
+		this.load.image("copy_coupon_button", "copy_coupon_button.svg");
 		this.load.image("copied_coupon_button", "copied_button.png");
 		this.load.image("coupon_code_container", "coupon_code_container.png");
         this.load.image("continuar_btn", "continuar_btn.png");

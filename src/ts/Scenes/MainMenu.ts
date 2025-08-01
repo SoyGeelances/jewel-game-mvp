@@ -56,17 +56,17 @@ export default class MainMenu extends Phaser.Scene {
             .setOrigin(0.5)
             .setDepth(100);
 
-        const howToImg = this.add.image(this.scale.width / 2, this.scale.height / 2, 'how_to_play')
-            .setScale(1)
+        const howToImg = this.add.image(this.scale.width / 2, this.scale.height / 2 + 50, 'how_to_play')
+            .setScale(0.95)
             .setOrigin(0.5)
             .setDepth(101);
 
-        const logoImg = this.add.image(this.scale.width / 2, howToImg.y - 310, 'logo_candy_Arcor_win')
-            .setScale(0.75)
+        const logoImg = this.add.image(this.scale.width / 2, howToImg.y - 300, 'logo_candy_Arcor_win')
+            .setScale(0.72)
             .setOrigin(0.5)
             .setDepth(101);
 
-        const closeBtn = this.add.image(this.scale.width - 15, 15, 'close_btn')
+        const closeBtn = this.add.image(this.scale.width - 9, 18, 'close_btn')
             .setOrigin(1, 0)
             .setScale(1)
             .setDepth(102)
@@ -89,7 +89,7 @@ export default class MainMenu extends Phaser.Scene {
 	public create(): void {
 		Utilities.LogSceneMethodEntry("MainMenu", "create");
 
-        this.helpBtn = this.add.image(this.scale.width - 15, 15, 'icon_help').setOrigin(1, 0).setDepth(2).setInteractive({ useHandCursor: true });
+        this.helpBtn = this.add.image(this.scale.width - 9, 18, 'icon_help').setOrigin(1, 0).setDepth(2).setInteractive({ useHandCursor: true });
         this.helpBtn.on('pointerdown', () => {
             
         this.showHowToPlayModal();

@@ -173,14 +173,27 @@ private setWinnerCouponCode() {
 
 
   private setMessageWinner() {
-    this.couponCodeContainer = this.scene.add.image(
+    /*this.couponCodeContainer = this.scene.add.image(
         this.scene.cameras.main.centerX, 
         this.scene.cameras.main.centerY + 30, 
         "win_message"
     )
     .setOrigin(0.5, 0.5)
     .setDepth(10)
-    .setScale(1, 1);
+    .setScale(1, 1);*/
+
+    this.scene.add.text(this.scene.cameras.main.centerX, this.scene.cameras.main.centerY + 27,
+        "¡Eso sí fue un match \nMoguloso 🍬!",
+        {
+            fontFamily: 'Open Sans',
+            fontSize: '14px',
+            fontStyle: 'bold',
+            color: '#ffffff',
+            align: 'center',
+            lineSpacing: 4,
+        }
+        )
+    .setOrigin(0.5, 0.5).setDepth(11);
   }
 
   private setWinnerScore() {
