@@ -81,9 +81,11 @@ function resize(game: Game): void {
                 scene.cameras.main.setZoom(zoomFactor);
                 
                 game.scale.refresh();
-                scene.cameras.main.flash(1000);
-                scene.scene.stop();
-                scene.scene.start();
+                if (scene.scene.isActive() && scene.scene.settings.active) {
+                    scene.cameras.main.setViewport(0, 0, width, height);
+                    const zoomFactor = window.innerWidth / 400;
+                    scene.cameras.main.setZoom(zoomFactor);
+                }
             }
         });
     }
