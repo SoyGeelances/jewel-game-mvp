@@ -81,10 +81,13 @@ function resize(game: Game): void {
                 scene.cameras.main.setZoom(zoomFactor);
                 
                 game.scale.refresh();
+                scene.cameras.main.flash(1000);
                 if (scene.scene.isActive() && scene.scene.settings.active) {
                     scene.cameras.main.setViewport(0, 0, width, height);
                     const zoomFactor = window.innerWidth / 400;
                     scene.cameras.main.setZoom(zoomFactor);
+                    scene.scene.stop();
+                    scene.scene.start();
                 }
             }
         });
@@ -118,20 +121,6 @@ if (window) {
 		// Uncomment the following two lines if you want the game to scale to fill the entire page, but keep the game ratio.
 		resize(game);
 		window.addEventListener("resize", () => resize(game), true);
-        
-        //Fix Resize IOS
-        window.addEventListener('pageshow', () => {
-        if (window.game) {
-            resize(window.game);      // re-dimensionar juego
-            window.scrollTo(0, 0);    // volver al top visual
-        }
-        });
-        document.addEventListener('visibilitychange', () => {
-        if (!document.hidden && window.game) {
-            resize(window.game);     
-            window.scrollTo(0, 0);    
-        }
-        });
 	}
 
 	window.onload = (): void => {

@@ -40,7 +40,6 @@ export class RetryScreen  {
     }
     this.prompt.setActions(promptContent.actions, 0, 25, 55, 1, 1);
     this.scene.sound.add('retry').play();
-    Footer.create(this.scene);
   }
 
 
