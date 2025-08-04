@@ -24,8 +24,8 @@ export default class Preloader extends Phaser.Scene {
 		this.load.svg("tevas_title", "tevas_title.svg");
 		this.load.svg("retry_btn", "retry_btn.svg");
         //this.load.image("retry_btn", "retry_btn.png");
-        this.load.image("logo_mogul_color", "logo_mogul_color.svg");
-        this.load.image("logo_mogul_white", "logo_mogul_white.svg");
+        this.load.image("logo_mogul_color", "logo_mogul_color.png");
+        this.load.image("logo_mogul_white", "logo_mogul_white.png");
         this.load.image('sparkle', 'sparkle_img.png');
         this.load.image('candy_glow', 'candy_glow_img.png');
         this.load.image('recarga_masti', 'recarga_masti.png');
