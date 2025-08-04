@@ -26,7 +26,8 @@ export class WinnerScreen  {
   show(promptContent: promptContentConfig, promptType: string) {
     this.scene.closeButton.destroy();
     this.prompt.setSplashBackground();
-    this.setSplashLogo();
+    this.scene.add.image( this.scene.cameras.main.centerX, this.scene.cameras.main.centerY - 250, "logo_candy_Arcor_win").setOrigin(0.5, 0.5).setDepth(10).setScale(1)
+
     this.prompt.setBackground(promptType, 0, 80, 1.1, 1.1); 
     this.prompt.setTitle(promptContent.title, 0, -105, 1, 1);
     this.setWinnerScore();
@@ -51,25 +52,6 @@ export class WinnerScreen  {
             resetButtons.forEach(applyButtonHoverEffect);
         }, 1500);
 	}, this);
-  }
-
-  private setSplashLogo() {
-    const logo = this.scene.add.image(
-      this.scene.cameras.main.centerX, 
-      this.scene.cameras.main.centerY - 250, 
-      "logo_candy_Arcor_win"
-    )
-    .setOrigin(0.5, 0.5)
-    .setDepth(10)
-    .setScale(0)
-
-    this.scene.tweens.add({
-			targets: logo,
-			scale: 1,
-			delay:0,
-			duration: 10,
-			ease: "Bounce.easeOut"
-		});
   }
 
 private setWinnerCouponCode() {
@@ -182,18 +164,23 @@ private setWinnerCouponCode() {
     .setDepth(10)
     .setScale(1, 1);*/
 
-    this.scene.add.text(this.scene.cameras.main.centerX, this.scene.cameras.main.centerY + 27,
-        "¡Eso sí fue un match \nMoguloso 🍬!",
-        {
+    document.fonts.load('14px "Open Sans"').then(() => {
+        this.scene.add.text(
+            this.scene.cameras.main.centerX,
+            this.scene.cameras.main.centerY + 27,
+            "¡Eso sí fue un match \nMoguloso 🍬!",
+            {
             fontFamily: 'Open Sans',
-            fontSize: '14px',
+            fontSize: '15px',
             fontStyle: 'bold',
             color: '#ffffff',
             align: 'center',
             lineSpacing: 4,
-        }
+            }
         )
-    .setOrigin(0.5, 0.5).setDepth(11);
+        .setOrigin(0.5, 0.5)
+        .setDepth(11);
+    });
   }
 
   private setWinnerScore() {

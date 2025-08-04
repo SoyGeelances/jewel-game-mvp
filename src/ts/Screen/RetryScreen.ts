@@ -22,21 +22,23 @@ export class RetryScreen  {
     this.prompt.setBackground(promptType, 0, 0, 1, 1);
     this.prompt.setTitle(promptContent.title, 0, -115, 1, 1);
     if (showPromoText) {
-        this.scene.add.text(
-        this.scene.cameras.main.centerX,
-        this.scene.cameras.main.centerY - 30,
-        "Estás cada vez más cerca de tu\nCupón de Descuento 🎉",
-        {
-            fontFamily: 'Open Sans',
-            fontSize: '14px',
-            fontStyle: 'bold',
-            color: '#ffffff',
-            align: 'center',
-            lineSpacing: 4,
-        }
-        )
-        .setOrigin(0.5, 0.5)
-        .setDepth(11);
+        document.fonts.load('14px "Open Sans"').then(() => {
+            this.scene.add.text(
+                this.scene.cameras.main.centerX,
+                this.scene.cameras.main.centerY - 30,
+                "Estás cada vez más cerca de tu\nCupón de Descuento 🎉",
+                {
+                fontFamily: 'Open Sans',
+                fontSize: '14px',
+                fontStyle: 'bold',
+                color: '#ffffff',
+                align: 'center',
+                lineSpacing: 4,
+                }
+            )
+            .setOrigin(0.5, 0.5)
+            .setDepth(11);
+        });
     }
     this.prompt.setActions(promptContent.actions, 0, 25, 55, 1, 1);
     this.scene.sound.add('retry').play();
