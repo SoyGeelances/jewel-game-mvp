@@ -758,6 +758,8 @@ console.log("reffill2");
         const scoreImage = this.add.image(10, 18, 'score').setOrigin(0, 0);
         const scoreWidth = scoreImage.width;
         const scoreHeight = scoreImage.height;
+            this.logoWhite = this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_white').setScale(0.43).setOrigin(0,0).setDepth(1);
+    this.logoColor = this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_color').setScale(0.43).setOrigin(0,0).setDepth(2).setCrop(0, 0, 0, 60);
 
         this.scoreText = this.add.text(20 + scoreWidth - 30, 17 + scoreHeight / 2, '0', {
             fontFamily: 'Luckiest Guy',
@@ -998,8 +1000,6 @@ console.log("reffill2");
     this.swapCandySound = this.sound.add("swap_candy");
     this.matchSound = this.sound.add("match_sound");
     this.shuffleCandySound = this.sound.add("shuffle_candies");
-    this.logoWhite = this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_white').setScale(0.43).setOrigin(0,0).setDepth(30);
-    this.logoColor = this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_color').setScale(0.43).setOrigin(0,0).setDepth(31).setCrop(0, 0, 0, 60);
     this.powerDowmSound = this.sound.add("power_down_sound");
     this.electricSparksSound = this.sound.add("electric_sparks_sound");
     this.comboSound = this.sound.add("combo_sound");
