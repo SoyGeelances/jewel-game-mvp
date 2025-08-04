@@ -28,10 +28,10 @@ const LEVELS = [
   { level: 4, goal: 2500, time: 34 },
   { level: 5, goal: 3700, time: 40 },
   { level: 6, goal: 5000, time: 40 },
-  { level: 7, goal: 6400, time: 42 },
-  { level: 8, goal: 7800, time: 44 },
-  { level: 9, goal: 9000, time: 46 },
-  { level: 10, goal: 10000, time: 45 }
+  { level: 7, goal: 6400, time: 41 },
+  { level: 8, goal: 7800, time: 42 },
+  { level: 9, goal: 9000, time: 45 },
+  { level: 10, goal: 10000, time: 44 }
 ];
 
 export default class MainGame extends Phaser.Scene {
@@ -392,6 +392,7 @@ export default class MainGame extends Phaser.Scene {
     this.events.off('update');
     this.progressTimer?.remove(false);
     this.clockTickingSound?.stop();
+    this.comboTimer?.remove(false);
     BackgroundMusic.getInstance().destroy();
 
     if (this.scoreValue >= this.scoreGoal) {
@@ -967,6 +968,8 @@ export default class MainGame extends Phaser.Scene {
 
   async create() {
     this.gameState = 'playing';
+    this.movingCandiesInProcess = false;
+    this.selectedCandy = null;
     this.closeButton = new CloseButton(this);
     this.retryScreen = new RetryScreen(this)
     this.winnerScreen = new WinnerScreen(this)

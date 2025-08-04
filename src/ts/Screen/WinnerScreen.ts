@@ -27,7 +27,6 @@ export class WinnerScreen  {
     this.scene.closeButton.destroy();
     this.prompt.setSplashBackground();
     this.scene.add.image( this.scene.cameras.main.centerX, this.scene.cameras.main.centerY - 250, "logo_candy_Arcor_win").setOrigin(0.5, 0.5).setDepth(10).setScale(1)
-
     this.prompt.setBackground(promptType, 0, 80, 1.1, 1.1); 
     this.prompt.setTitle(promptContent.title, 0, -105, 1, 1);
     this.setWinnerScore();
