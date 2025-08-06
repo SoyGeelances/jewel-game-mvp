@@ -8,7 +8,7 @@ body {
 	overflow: hidden;
 	background-image: url("/assets/web_background.png");
 	background-size: cover;
-    background-repeat: no-repeat;
+    background-repeat: repeat;
     height: 100svh;
 }
 

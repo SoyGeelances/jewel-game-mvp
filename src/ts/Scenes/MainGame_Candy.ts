@@ -23,15 +23,7 @@ const LOGO_Y = 25;
 // LEVELS
 const LEVELS = [
   { level: 1, goal: 300, time: 25 },
-  { level: 2, goal: 800, time: 28 },
-  { level: 3, goal: 1500, time: 31 },
-  { level: 4, goal: 2500, time: 34 },
-  { level: 5, goal: 3700, time: 40 },
-  { level: 6, goal: 5000, time: 40 },
-  { level: 7, goal: 6400, time: 41 },
-  { level: 8, goal: 7800, time: 42 },
-  { level: 9, goal: 9000, time: 45 },
-  { level: 10, goal: 10000, time: 44 }
+ 
 ];
 
 export default class MainGame extends Phaser.Scene {

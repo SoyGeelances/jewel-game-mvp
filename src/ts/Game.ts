@@ -4,7 +4,9 @@ import Preloader from "./Scenes/Preloader";
 import MainMenu from "./Scenes/MainMenu";
 import SplashScreen from "./Scenes/SplashScreen";
 import Utilities from "./Utilities";
+import MainGameJewel from "./Scenes/MainGame_Jewel";
 import MainGameCandy from "./Scenes/MainGame_Candy";
+import MainGameMemo from "./Scenes/MainGame_Memo";
 import MainSettings from "./Scenes/MainSettings";
 import LeavingGameScene from "./Scenes/LeavingGameScene";
 
@@ -13,13 +15,12 @@ const dynamicHeight = Math.max(window.innerHeight, MIN_HEIGHT);
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
 	width: 400,
-	height: dynamicHeight, // dinámico según pantalla
+	height: window.innerHeight > MIN_HEIGHT ? window.innerHeight : dynamicHeight,
 	type: Phaser.AUTO,
 	transparent: true,
 	parent: "content",
 	title: "Juego Candy para Arcor"
 };
-
 
 export default class Game extends Phaser.Game {
 	onCloseGame?: () => void;
@@ -29,15 +30,15 @@ export default class Game extends Phaser.Game {
 		Utilities.LogSceneMethodEntry("Game", "constructor");
 		super(config);
 		this.onCloseGame = config.onClose;
-
 		this.scene.add(Boot.Name, Boot);
 		this.scene.add(Preloader.Name, Preloader);
 		this.scene.add(SplashScreen.Name, SplashScreen);
 		this.scene.add(MainMenu.Name, MainMenu);
-		this.scene.add(MainGameCandy.Name, MainGameCandy);
+		//this.scene.add(MainGameJewel.Name, MainGameJewel);
+        this.scene.add(MainGameCandy.Name, MainGameCandy);
+		//this.scene.add(MainGameMemo.Name, MainGameMemo);
 		this.scene.add(LeavingGameScene.Name, LeavingGameScene);
 		this.scene.add(MainSettings.Name, MainSettings);
-
 		this.scene.start(Boot.Name);
 		this.selectedCoupon = this.getRandomCoupon();
 	}
@@ -46,8 +47,8 @@ export default class Game extends Phaser.Game {
 		const coupons = [
 			'TESTCUPONCANDYGAME'
 		];
-		const randomIndex = Math.floor(Math.random() * coupons.length);
-		return coupons[randomIndex];
+    const randomIndex = Math.floor(Math.random() * coupons.length);
+    return coupons[randomIndex];
 	}
 
 	public getCouponCode() {
@@ -55,34 +56,38 @@ export default class Game extends Phaser.Game {
 	}
 }
 
-// ✅ Nueva función resize que escala visualmente el canvas
+/**
+ * Workaround for inability to scale in Phaser 3.
+ * From http://www.emanueleferonato.com/2018/02/16/how-to-scale-your-html5-games-if-your-framework-does-not-feature-a-scale-manager-or-if-you-do-not-use-any-framework/
+ */
 function resizeCanvas(): void {
 	const canvas = document.querySelector("canvas") as HTMLCanvasElement;
-	const windowWidth = window.innerWidth;
+	const windowWidth = window.innerWidth - 10;
 	const windowHeight = window.innerHeight;
 	const windowRatio = windowWidth / windowHeight;
 
-	// Aseguramos que son números
+	// NUEVO: actualizar altura dinámica
 	const gameWidth = gameConfig.width as number;
-	const gameHeight = gameConfig.height as number;
+	const gameHeight = Math.max(window.innerHeight, 700);
 	const gameRatio = gameWidth / gameHeight;
-
+    console.log("window",windowRatio.toFixed(2) );
+    console.log("gameRatio",gameRatio.toFixed(2) );
 	if (windowRatio < gameRatio) {
+        console.log("entro");
 		canvas.style.width = windowWidth + "px";
-		canvas.style.height = (windowWidth / gameRatio) + "px";
+		canvas.style.height = window.innerHeight + "px";
 	} else {
 		canvas.style.width = (windowHeight * gameRatio) + "px";
 		canvas.style.height = windowHeight + "px";
 	}
 }
 
-
-// ✅ Tipado extra
 type PhaserGameOptions = {
 	parent?: string;
-	assetFolder?: string;
+	assetFolder? : string;
 	onClose?: () => void;
 	couponcode?: string;
+	// more options
 }
 
 declare global {
@@ -93,30 +98,29 @@ declare global {
 	}
 }
 
-// ✅ Inicializador global
+
 if (window) {
 	window.newGame = (options: PhaserGameOptions) => {
-		const newOptions = { ...gameConfig, ...options };
+		const newOptions = {...gameConfig, ...options}
 
-		if (newOptions.assetFolder) window.assetFolder = newOptions.assetFolder;
-
-		const game = new Game(newOptions as Phaser.Types.Core.GameConfig & PhaserGameOptions);
+		if(newOptions.assetFolder) window.assetFolder = newOptions.assetFolder;
+		const game = new Game(newOptions as Phaser.Types.Core.GameConfig & PhaserGameOptions);	
 		window.game = game;
-
-		// Escalar canvas al inicio
+		// Uncomment the following two lines if you want the game to scale to fill the entire page, but keep the game ratio.
 		resizeCanvas();
-		window.addEventListener("resize", () => resizeCanvas(), true);
-	};
+	    window.addEventListener("resize", resizeCanvas, true);
+	}
 
 	window.onload = (): void => {
 		const queryString = window.location.search;
 		const urlParams = new URLSearchParams(queryString);
-		const async = urlParams.get('async');
-
-		if (!async) {
+		const async = urlParams.get('async')
+		
+		if(!async) {
 			window.newGame({});
 		} else {
-			console.log("Waiting for instructions");
+			console.log("Waiting for instructions")
 		}
-	};
+
+	}
 }
