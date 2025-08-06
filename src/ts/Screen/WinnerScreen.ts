@@ -33,7 +33,7 @@ export class WinnerScreen  {
     this.actionButtons = this.prompt.setActions(promptContent.actions, 0, 150, 55, 1, 1);
     this.setMessageWinner();
     this.setWinnerCouponCode();
-    this.prompt.setActions(promptContent.actions, 0, 150, 55, 1, 1);
+    //this.prompt.setActions(promptContent.actions, 0, 150, 55, 1, 1);
     this.scene.sound.add('tadaa').play({
       volume: 0.3
     });
@@ -56,6 +56,45 @@ export class WinnerScreen  {
 private setWinnerCouponCode() {
   const code = this.scene.game.getCouponCode();
 
+  this.couponCodeContainer = this.scene.add.image(
+        this.scene.cameras.main.centerX, 
+        this.scene.cameras.main.centerY + 85, 
+        "coupon_code_container"
+    )
+    .setOrigin(0.5, 0.5)
+    .setDepth(10)
+    .setScale(1.1, 1.1);
+
+    this.couponCode = this.scene.add.text(
+      this.scene.cameras.main.centerX, 
+      this.scene.cameras.main.centerY + 83,
+      this.scene.game.getCouponCode(),
+      {
+          font: "18px 'Luckiest Guy'",
+          color: "#FFFFFF",
+      }
+    )
+    .setOrigin(0.5, 0.5)
+    .setDepth(10)
+    .setScale(1.1, 1.1);
+
+    this.scene.tweens.add({
+      targets: this.couponCode,
+      y: this.couponCode.y - 30,  
+      scaleY: 1.2,  
+      duration: 200,  
+      ease: 'Power1',
+      yoyo: true,  
+      onComplete: () => {
+          this.scene.tweens.add({
+              targets: this.couponCode,
+              y: this.scene.cameras.main.centerY + 128,  
+              duration: 30,  
+              ease: 'Bounce.easeOut',  
+          });
+      }
+    });
+
   // Eliminar anteriores si existieran
   document.getElementById("couponTextarea")?.remove();
   document.getElementById("copyHiddenBtn")?.remove();
@@ -68,20 +107,12 @@ private setWinnerCouponCode() {
 
   Object.assign(textarea.style, {
     position: "absolute",
-    textShadow: "rgb(255 255 255 / 40%) 0px 0px 2px)",
-    fontSize: "23px",
-    lineHeight: "23px",
-    width: "294px",
-    height: "52px",
-    fontFamily: "'Luckiest Guy', sans-serif",
-    color: "#ffffff",
-    backgroundColor: "#294256",
-    border: "none",
-    borderRadius: "10px",
-    padding: "18px 0px 10px",
-    textAlign: "center",
-    zIndex: "9999",
-    pointerEvents: "auto",
+    fontSize: "1px",
+    width: "1px",
+    height: "1px",
+    top: "-9999px", // completamente fuera de pantalla
+    left: "-9999px",
+    opacity: "0",
     outline: "none",
     resize: "none",
     boxSizing: "border-box",
