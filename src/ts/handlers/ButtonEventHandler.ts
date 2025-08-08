@@ -40,20 +40,25 @@ export class ButtonEventHandler {
     }
 
     private static notifyParent(type: string, url?: string) {
-        const inIframe = window.self !== window.top;
+    const inIframe = window.self !== window.top;
 
-        if (inIframe && window.parent) {
-            try {
-                window.parent.postMessage({ type, url }, "https://arcorencasa.com");
-                return;
-            } catch (e) {
-                console.warn("postMessage falló, aplicando fallback:", e);
-            }
+    if (inIframe && window.parent) {
+        try {
+        const parentOrigin =
+            (window.location as any).ancestorOrigins?.[0] || // Chrome/WebKit
+            (document.referrer ? new URL(document.referrer).origin : "*"); // cross-browser
+
+        window.parent.postMessage({ type, url }, parentOrigin);
+        return;
+        } catch (e) {
+        console.warn("postMessage falló:", e);
         }
-
-        // Fallback: navegar en esta misma pestaña si no hay parent/iframe
-        if (url) window.location.href = url;
     }
+
+    // Fallback si no está embebido
+    if (url) window.location.href = url;
+    }
+
 
     private static handleCloseEvent(scene: Phaser.Scene) {
         scene.scene.launch("LeavingGameScene");
