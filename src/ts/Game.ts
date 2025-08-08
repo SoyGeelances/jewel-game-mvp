@@ -62,7 +62,7 @@ export default class Game extends Phaser.Game {
  */
 function resizeCanvas(): void {
 	const canvas = document.querySelector("canvas") as HTMLCanvasElement;
-	const windowWidth = window.innerWidth - 10;
+	const windowWidth = window.innerWidth - 5;
 	const windowHeight = window.innerHeight;
 	const windowRatio = windowWidth / windowHeight;
 
@@ -70,10 +70,7 @@ function resizeCanvas(): void {
 	const gameWidth = gameConfig.width as number;
 	const gameHeight = Math.max(window.innerHeight, 700);
 	const gameRatio = gameWidth / gameHeight;
-    console.log("window",windowRatio.toFixed(2) );
-    console.log("gameRatio",gameRatio.toFixed(2) );
 	if (windowRatio < gameRatio) {
-        console.log("entro");
 		canvas.style.width = windowWidth + "px";
 		canvas.style.height = window.innerHeight + "px";
 	} else {

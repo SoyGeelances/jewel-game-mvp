@@ -16,12 +16,12 @@ export class ButtonEventHandler {
 
             case "exit":
                 if ((scene.game as Game).onCloseGame) (scene.game as Game).onCloseGame();
-                window.location.href = 'https://arcorencasa.com/tienda/';
+                ButtonEventHandler.notifyParent("EXIT_GAME", "https://arcorencasa.com/tienda/");
                 break;
             
             case "gotoshop":
                 if ((scene.game as Game).onCloseGame) (scene.game as Game).onCloseGame();
-                window.location.href = 'https://arcorencasa.com/';
+                 ButtonEventHandler.notifyParent("GO_TO_SHOP", "https://arcorencasa.com/");
                 break;
 
             case "retry":
@@ -37,6 +37,22 @@ export class ButtonEventHandler {
                 console.log("Botón no reconocido:", buttonId);
                 break;
         }
+    }
+
+    private static notifyParent(type: string, url?: string) {
+        const inIframe = window.self !== window.top;
+
+        if (inIframe && window.parent) {
+            try {
+                window.parent.postMessage({ type, url }, "https://arcorencasa.com");
+                return;
+            } catch (e) {
+                console.warn("postMessage falló, aplicando fallback:", e);
+            }
+        }
+
+        // Fallback: navegar en esta misma pestaña si no hay parent/iframe
+        if (url) window.location.href = url;
     }
 
     private static handleCloseEvent(scene: Phaser.Scene) {
