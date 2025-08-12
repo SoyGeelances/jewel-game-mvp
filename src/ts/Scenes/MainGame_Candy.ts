@@ -25,8 +25,6 @@ const LEVELS = [
   { level: 1, goal: 300, time: 25 },
   { level: 2, goal: 800, time: 28 },
   { level: 3, goal: 1500, time: 31 },
-  { level: 4, goal: 2500, time: 34 },
-
 ];
 
 export default class MainGame extends Phaser.Scene {
@@ -479,6 +477,7 @@ export default class MainGame extends Phaser.Scene {
     this.comboText.setAlpha(1);
     this.comboText.setScale(1);
     this.comboText.setY(this.scale.height / 2 - 50); 
+    this.comboText.setDepth(1);
 
     this.tweens.add({
         targets: this.comboText,

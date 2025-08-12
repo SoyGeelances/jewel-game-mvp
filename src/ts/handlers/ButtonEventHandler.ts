@@ -21,7 +21,7 @@ export class ButtonEventHandler {
             
             case "gotoshop":
                 if ((scene.game as Game).onCloseGame) (scene.game as Game).onCloseGame();
-                 ButtonEventHandler.notifyParent("GO_TO_SHOP", "https://arcorencasa.com/");
+                ButtonEventHandler.notifyParent("GO_TO_SHOP", "https://arcorencasa.com/");
                 break;
 
             case "retry":
@@ -40,23 +40,23 @@ export class ButtonEventHandler {
     }
 
     private static notifyParent(type: string, url?: string) {
-    const inIframe = window.self !== window.top;
+        const inIframe = window.self !== window.top;
 
-    if (inIframe && window.parent) {
-        try {
-        const parentOrigin =
-            (window.location as any).ancestorOrigins?.[0] || // Chrome/WebKit
-            (document.referrer ? new URL(document.referrer).origin : "*"); // cross-browser
+        if (inIframe && window.parent) {
+            try {
+            const parentOrigin =
+                (window.location as any).ancestorOrigins?.[0] || 
+                (document.referrer ? new URL(document.referrer).origin : "*"); 
 
-        window.parent.postMessage({ type, url }, parentOrigin);
-        return;
-        } catch (e) {
-        console.warn("postMessage falló:", e);
+            window.parent.postMessage({ type, url }, parentOrigin);
+            return;
+            } catch (e) {
+            console.warn("postMessage falló:", e);
+            }
         }
-    }
 
-    // Fallback si no está embebido
-    if (url) window.location.href = url;
+        // Fallback si no está embebido
+        if (url) window.location.href = url;
     }
 
 

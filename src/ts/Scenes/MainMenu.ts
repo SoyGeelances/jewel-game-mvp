@@ -57,7 +57,7 @@ export default class MainMenu extends Phaser.Scene {
             .setDepth(100);
 
         const howToImg = this.add.image(this.scale.width / 2, this.scale.height / 2 + 50, 'how_to_play')
-            .setScale(0.95)
+            .setScale(1)
             .setOrigin(0.5)
             .setDepth(101);
 
