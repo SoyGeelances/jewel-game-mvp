@@ -16,15 +16,18 @@ const CANDY_WIDTH = 116 * 0.6;
 const CANDY_HEIGHT = 116 * 0.6;
 const GAP = 6
 const CANDY_FRAME_START = 1;
-const CANDY_FRAME_END = 6;
+const CANDY_FRAME_END = 8;
 const LOGO_X = 16;
 const LOGO_Y = 25; 
 
 // LEVELS
 const LEVELS = [
-  { level: 1, goal: 300, time: 25 },
-  { level: 2, goal: 800, time: 28 },
-  { level: 3, goal: 1500, time: 31 },
+  { level: 1, goal: 400, time: 25 },
+  { level: 2, goal: 1000, time: 28 },
+  { level: 3, goal: 1600, time: 31 },
+  { level: 4, goal: 2700, time: 34 },
+  { level: 5, goal: 3700, time: 40 },
+  { level: 6, goal: 5000, time: 40 },
 ];
 
 export default class MainGame extends Phaser.Scene {
@@ -180,7 +183,7 @@ export default class MainGame extends Phaser.Scene {
 
 
   private swapCandies(c1: Phaser.GameObjects.Sprite, c2: Phaser.GameObjects.Sprite) {
-    //console.log("swapcandiesvv")
+    console.log("swapcandies")
     this.movingCandiesInProcess = true;
 
     const row1 = c1.getData('row');
@@ -237,7 +240,7 @@ export default class MainGame extends Phaser.Scene {
 
   private getMatches(): Phaser.GameObjects.Sprite[] {
     const matches: Set<Phaser.GameObjects.Sprite> = new Set()
-    //console.log("getmatches")
+    console.log("getmatches")
     // Detectar combinaciones horizontales
     for (let row = 0; row < GRID_HEIGHT; row++) {
         let match: Phaser.GameObjects.Sprite[] = []
@@ -303,7 +306,7 @@ export default class MainGame extends Phaser.Scene {
     const width = this.logoColor.width * progress;
     this.logoColor.setCrop(0, 0, width, this.logoColor.height);
 
-    if (this.scoreValue >= this.scoreGoal && this.gameState !== 'ended') {
+    if (this.gameState === 'playing' && this.scoreValue >= this.scoreGoal) {
         this.progressTimer?.remove(false); 
         if (this.currentLevelIndex === LEVELS.length - 1) {
             this.endGame(); // nivel final
@@ -398,7 +401,7 @@ export default class MainGame extends Phaser.Scene {
 
   private removeMatches(matches: Phaser.GameObjects.Sprite[]) {
     //this.matchSound.play()
-    //console.log("matches: ", matches);
+    console.log("matches: ", matches);
     // Calcular Combos
     const basePoints = matches.length * 10;
     const points = basePoints * this.comboCount;
@@ -489,8 +492,8 @@ export default class MainGame extends Phaser.Scene {
   }
 
   private dropCandies() {
-    //console.log("droppcandies");
-    if (this.gameState !== 'playing') return;
+    console.log("droppcandies");
+    if (this.gameState === 'ended') return;
     for (let col = 0; col < GRID_WIDTH; col++) {
         for (let row = GRID_HEIGHT - 1; row >= 0; row--) {
             if (this.grid[row][col] === null) {
@@ -519,11 +522,14 @@ export default class MainGame extends Phaser.Scene {
   }
 
   private refillGrid(): Promise<void> {
-    //console.log("reffill");
+    console.log("reffill");
     this.movingCandiesInProcess = true; //Bloquear movimientos
 
     return new Promise((resolve) => {
-        if (this.gameState !== 'playing' && this.gameState !== 'paused') return resolve();
+        if (this.gameState !== 'playing' && this.gameState !== 'paused') {
+            this.movingCandiesInProcess = false;
+            return resolve();
+        }
 
         for (let row = 0; row < GRID_HEIGHT; row++) {
         for (let col = 0; col < GRID_WIDTH; col++) {
@@ -597,6 +603,7 @@ export default class MainGame extends Phaser.Scene {
   }
 
   private hasPossibleMoves(): boolean {
+    console.log("verificando matches");
     for (let row = 0; row < GRID_HEIGHT; row++) {
         for (let col = 0; col < GRID_WIDTH; col++) {
         const current = this.grid[row][col]
@@ -632,6 +639,7 @@ export default class MainGame extends Phaser.Scene {
   }
 
   private shuffleBoard() {
+    console.log('⚠️ shuffleboard');
     const maxAttempts = 20; // evitar bucle infinito
     let attempts = 0;
 
@@ -639,15 +647,17 @@ export default class MainGame extends Phaser.Scene {
 
     for (let row = 0; row < GRID_HEIGHT; row++) {
         for (let col = 0; col < GRID_WIDTH; col++) {
-            const candy = this.grid[row][col];
-            if (candy) candies.push(candy);
+        const candy = this.grid[row][col];
+        if (!candy) {
+            console.warn('⚠️ Grilla incompleta antes de barajar. Cancelando shuffle.');
+            return; 
+        }
+        candies.push(candy);
         }
     }
 
-    if (candies.length !== GRID_WIDTH * GRID_HEIGHT) {
-        console.warn('⚠️ Grilla incompleta antes de barajar. Se completará.');
-        this.refillGrid();
-        return;
+    for (const candy of candies) {
+        this.tweens.killTweensOf(candy); // detén caídas/animaciones pendientes
     }
 
     let hasMoves = false;
@@ -975,13 +985,13 @@ export default class MainGame extends Phaser.Scene {
     this.shuffleCandySound = this.sound.add("shuffle_candies");
     this.logoWhite = this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_white').setScale(0.43).setOrigin(0,0).setDepth(1);
     this.logoColor = this.add.image(LOGO_X, LOGO_Y, 'logo_mogul_color').setScale(0.43).setOrigin(0,0).setDepth(2).setCrop(0, 0, 0, 60);
-    this.powerDowmSound = this.sound.add("power_down_sound");
-    this.electricSparksSound = this.sound.add("electric_sparks_sound");
+    this.powerDowmSound = this.sound.add("power_down_sound", { volume: 0.6, loop: false, });
+    this.electricSparksSound = this.sound.add("electric_sparks_sound", { volume: 0.8, loop: false, });
     this.comboSound = this.sound.add("combo_sound");
     this.comboX5Sound = this.sound.add("combo_x5_sound");
     this.clockTickingSound = this.sound.add("clock_ticking_sound", { loop: false });
     this.earthRocksSound = this.sound.add("earth_rocks_sound");
-    this.startLevelSound = this.sound.add("start_level_sound");
+    this.startLevelSound = this.sound.add("start_level_sound", { volume: 0.4, loop: false, });
     this.comboText = this.add.text(this.cameras.main.centerX, this.scale.height / 2, '', {
         font: "48px 'Luckiest Guy'",
         color: '#FFD700',
@@ -992,6 +1002,13 @@ export default class MainGame extends Phaser.Scene {
     await this.playIntroAnimation(); 
     await this.delay(400);
     await this.createGridWithoutMatches();
+    if (!this.hasPossibleMoves()) {
+        this.movingCandiesInProcess = true;
+        this.showShuffleMessage();
+        this.shuffleCandySound.play();
+        this.shuffleBoard();
+        await this.refillGrid();
+    }
 
     this.progressFrame = this.add.image(this.cameras.main.centerX, this.scale.height - 68, 'progress-frame').setOrigin(0.5)
     this.progressBar = this.add.graphics()

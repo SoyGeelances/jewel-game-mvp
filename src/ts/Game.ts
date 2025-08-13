@@ -24,7 +24,7 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
 
 export default class Game extends Phaser.Game {
 	onCloseGame?: () => void;
-	selectedCoupon: string = 'TESTCUPONCANDYGAME';
+	selectedCoupon: string = 'MOGULMASTI15';
 
 	constructor(config: Phaser.Types.Core.GameConfig & PhaserGameOptions) {
 		Utilities.LogSceneMethodEntry("Game", "constructor");
