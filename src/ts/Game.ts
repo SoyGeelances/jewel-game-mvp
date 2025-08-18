@@ -45,7 +45,7 @@ export default class Game extends Phaser.Game {
 
 	public getRandomCoupon() {
 		const coupons = [
-			'TESTCUPONCANDYGAME'
+			'MOGULMASTI15'
 		];
     const randomIndex = Math.floor(Math.random() * coupons.length);
     return coupons[randomIndex];
