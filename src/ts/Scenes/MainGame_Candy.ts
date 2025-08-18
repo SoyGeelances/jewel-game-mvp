@@ -16,7 +16,7 @@ const CANDY_WIDTH = 116 * 0.6;
 const CANDY_HEIGHT = 116 * 0.6;
 const GAP = 6
 const CANDY_FRAME_START = 1;
-const CANDY_FRAME_END = 8;
+const CANDY_FRAME_END = 6;
 const LOGO_X = 16;
 const LOGO_Y = 25; 
 
@@ -24,10 +24,6 @@ const LOGO_Y = 25;
 const LEVELS = [
   { level: 1, goal: 400, time: 25 },
   { level: 2, goal: 1000, time: 28 },
-  { level: 3, goal: 1600, time: 31 },
-  { level: 4, goal: 2700, time: 34 },
-  { level: 5, goal: 3700, time: 40 },
-  { level: 6, goal: 5000, time: 40 },
 ];
 
 export default class MainGame extends Phaser.Scene {

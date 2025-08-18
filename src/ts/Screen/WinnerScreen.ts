@@ -106,36 +106,42 @@ private setWinnerCouponCode() {
   textarea.value = code;
 
   Object.assign(textarea.style, {
-    position: "absolute",
-    fontSize: "1px",
-    width: "1px",
-    height: "1px",
-    top: "-9999px", // completamente fuera de pantalla
-    left: "-9999px",
-    opacity: "0",
-    outline: "none",
-    resize: "none",
-    boxSizing: "border-box",
-    transform: "translate(-50%, -50%)",
+  position: "fixed",     // <- fijo, no absolute
+  top: "0px",            // <- sin -9999 ni transform
+  left: "0px",
+  width: "1px",
+  height: "1px",
+  opacity: "0",
+  fontSize: "16px",      // <- evita zoom en iOS
+  lineHeight: "1",
+  padding: "0",
+  margin: "0",
+  border: "0",
+  outline: "none",
+  resize: "none",
+  pointerEvents: "none",
   });
 
   const btn = document.createElement("button");
   btn.id = "copyHiddenBtn";
   btn.innerText = "";
   Object.assign(btn.style, {
-    position: "absolute",
-    width: "216px",
-    height: "49px",
-    zIndex: "9999",
-    padding: "10px 20px",
-    border: "none",
-    borderRadius: "8px",
-    background: "rgb(170 71 115 / 2%)",
-    color: "#000",
-    fontSize: "18px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    transform: "translate(-50%, -50%)",
+  position: "absolute",
+  width: "216px",
+  height: "49px",
+  zIndex: "9999",
+  padding: "10px 20px",
+  border: "none",
+  borderRadius: "8px",
+  background: "rgb(170 71 115 / 2%)",
+  color: "#000",
+  fontSize: "18px",
+  fontWeight: "bold",
+  cursor: "pointer",
+  transform: "translate(-50%, -50%)",
+  userSelect: "none",       // <- evita selección accidental del botón
+  WebkitUserSelect: "none",
+  WebkitTouchCallout: "none"
   });
 
   btn.onclick = () => {
